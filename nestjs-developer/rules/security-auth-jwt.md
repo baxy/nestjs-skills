@@ -12,7 +12,8 @@ Authentication has one mechanism: a `passport-jwt` strategy (`JwtStrategy`) behi
 **`JwtUser` has no optional fields, and `validate()` refuses a token that cannot fill one.** An `undefined` id reaches TypeORM as a dropped `WHERE` condition, so a query scoped to the caller answers with every caller's rows. Refusing the token is what makes the type true.
 
 - Verify signature, expiry, issuer and audience. With your own signing key, read it from config (`auth.jwt.*`, see `devops-use-config-module`); with an external identity provider (Auth0, Cognito), use `secretOrKeyProvider` from `jwks-rsa` and the provider's issuer and audience.
-- Build `JwtUser` from the claims only. Do not load the user from the database on every request; services that need more than the claims load it themselves.
+- Build `JwtUser` from the claims only. Do not load the user from the database on every request; services that need more than the claims load it themselves. A deactivated or deleted user therefore keeps access until their access token expires, which is why access tokens live minutes.
+- **The refresh exchange checks the user again.** It loads the user and refuses (401) one that no longer exists or is deactivated, and builds the new access token from the user's current roles, so a role change takes effect at the next refresh. Deactivating or deleting a user revokes their refresh tokens.
 - Never put secrets or personal data beyond what `JwtUser` needs into a token you issue.
 - Tokens you issue: short-lived access tokens (minutes), and refresh tokens that are random, stored hashed with SHA-256 (they are high-entropy, so a slow password hash adds nothing and prevents lookup), and revocable. Passwords are the opposite case: see `security-hash-passwords`.
 

@@ -14,6 +14,7 @@ Generate API documentation from the code with `@nestjs/swagger` and its CLI plug
 - **Every controller** has exactly one `@ApiTags(...)` named after the resource, plus its security decorator (for example `@ApiBearerAuth('bearer')`). Do not document dev-only auth schemes.
 - **Every endpoint** has `@ApiOperation` with both `summary` and `description`.
 - Response decorators (`@ApiOkResponse`, `@ApiCreatedResponse`) are recommended when the endpoint returns a response DTO (see `api-use-dto-serialization`), not required otherwise.
+- Error responses specific to the endpoint are recommended too, each with a description of when it happens: `@ApiNotFoundResponse` for a missing resource, `@ApiConflictResponse` for a duplicate, `@ApiBadRequestResponse` for a broken domain rule, `@ApiForbiddenResponse` for a role check.
 - Expose the spec in every environment where clients need it; do not hide it behind `NODE_ENV`.
 
 Example values:

@@ -9,7 +9,7 @@ metadata:
 
 # NestJS Reviewer
 
-Reviews NestJS code against the rules of the `nestjs-developer` skill. Every Critical and Warning finding is backed by `file:line` evidence, a concrete fix, and the ID of the rule it breaks.
+Reviews NestJS code against the rules of the `nestjs-developer` skill. Every Critical and Warning finding is backed by `file:line` evidence, a concrete fix, and the ID of the rule it breaks, or, for a defect no rule covers, the input or state that makes it fail.
 
 ## Sources
 
@@ -38,7 +38,7 @@ Copy this checklist into your response and tick it off:
 | Severity | When |
 |---|---|
 | Critical | Security hole (unguarded protected route, password stored plain, fast-hashed or encrypted, sensitive column without `@Exclude()` + `@ApiHideProperty()`, entity converted to a response DTO without `excludeExtraneousValues: true`, injection, secret in code), data loss or corruption (multi-entity write without a transaction, `synchronize: true` or `synchronize` read from config, destructive migration), or code that crashes or breaks an endpoint |
-| Warning | Any other violation of a `nestjs-developer` rule, including the `style-` rules |
+| Warning | Any other violation of a `nestjs-developer` rule, including the `style-` rules, or a concrete defect no rule covers (a logic error, an unhandled case) shown with the input or state that triggers it; tag it `no rule` instead of a rule ID |
 | Suggestion | An improvement no rule requires: readability, performance, developer experience |
 
 The rule's impact level (CRITICAL to LOW) orders findings within a severity; it does not set the severity.

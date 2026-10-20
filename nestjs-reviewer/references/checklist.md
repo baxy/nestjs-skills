@@ -51,6 +51,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 ## Swagger / OpenAPI
 - [ ] Every controller has one `@ApiTags` and a security decorator (`@ApiBearerAuth('bearer')`) [api-document-with-openapi]
 - [ ] Every method has `@ApiOperation` with `summary` and `description` [api-document-with-openapi]
+- [ ] Endpoint-specific error statuses documented (`@ApiNotFoundResponse`, `@ApiConflictResponse`...); recommended, so a missing one is a Suggestion [api-document-with-openapi]
 - [ ] Every new or changed DTO field has `@ApiProperty`/`@ApiPropertyOptional` with `description` and `example` (a nested-DTO field takes its example from the nested DTO) [api-document-with-openapi]
 - [ ] Examples are realistic, UUID examples use the nil UUID, dates are fictional ISO 8601 [api-document-with-openapi]
 - [ ] `@ApiProperty` does not repeat `type`, `required`, `format` or `enum` given by validators [api-document-with-openapi]
@@ -69,7 +70,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] Side effects decoupled with events where appropriate; event names `{object}.{action}` [arch-use-events]
 
 ## DTOs and Validation
-- [ ] Request DTOs with `class-validator` decorators [security-validate-all-input]
+- [ ] Request DTOs with `class-validator` decorators; shared `ValidationPipe` options include `whitelist`, `forbidNonWhitelisted`, `forbidUnknownValues` and `transform` [security-validate-all-input]
 - [ ] Nested objects/arrays validated with `@ValidateNested` + `@Type` [security-validate-all-input]
 - [ ] Update DTOs derived with `PartialType`/`OmitType` from `@nestjs/swagger`, never copied [api-use-mapped-types]
 - [ ] File and class names follow the DTO naming table (`.param.dto.ts`, `{verb}-...query.dto.ts`, `-response.dto.ts`) [api-dto-naming]
@@ -98,6 +99,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] `JwtAuthGuard` and `RolesGuard` registered globally; routes opt out with `@Public()`; no per-route `@UseGuards` for them [security-use-guards]
 - [ ] Role checks use guards + decorators, not inline checks [security-use-guards]
 - [ ] One passport `JwtStrategy` whose `validate()` returns a complete `JwtUser` or refuses the token; secrets from config, short-lived access tokens [security-auth-jwt]
+- [ ] The refresh exchange reloads the user and refuses a missing or deactivated one; deactivating or deleting a user revokes their refresh tokens [security-auth-jwt]
 - [ ] Repeated decorator stacks composed with `applyDecorators` [api-custom-param-decorators]
 
 ## Interceptors and Middleware
@@ -115,6 +117,8 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 
 ## Database and Migrations
 - [ ] Structural migrations generated with `migration:generate`, not hand-written; `migration:create` only for data changes [db-use-migrations]
+- [ ] Migrations applied by a separate deploy step, never `migrationsRun: true` [db-use-migrations]
+- [ ] Soft-deletable entities deleted with `softDelete()`/`softRemove()`, not `delete()`/`remove()` [db-entity-conventions]
 - [ ] Migration filenames lowercase and dash-separated; no hardcoded schema prefixes [db-use-migrations]
 - [ ] Re-running `migration:generate` produces nothing (no drift) [db-use-migrations]
 - [ ] **Critical:** TypeORM `synchronize` hardcoded to `false`, never `true` and never read from config [db-use-migrations]
@@ -144,6 +148,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] One e2e spec per controller; no two specs over the same routes; `describe('VERB /path')` [test-organize-by-tier]
 - [ ] E2E suites use the real service with mocked repositories, driven by `supertest` through `createTestApp()`; the service under test is never mocked [test-use-testing-module]
 - [ ] Guards and interceptors tested through probe routes, including deny paths [test-guards-and-interceptors]
+- [ ] Real authentication tested once: the real `JwtAuthGuard` and `JwtStrategy` answer 401 to missing, expired, wrongly signed and wrong-issuer tokens [test-guards-and-interceptors]
 - [ ] New constraints, partial indexes or migrations covered in the database tier, with savepoints for expected failures [test-database-tier]
 - [ ] Integration specs are order-independent and assert only on data they created [test-integration-suites]
 - [ ] External services mocked in unit and e2e tiers [test-mock-external-services]

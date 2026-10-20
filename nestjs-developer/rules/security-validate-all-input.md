@@ -10,6 +10,7 @@ tags: security, validation, dto, pipes
 Every request body, query string and route parameter is bound to a DTO class with `class-validator` decorators and checked by one global `ValidationPipe`, registered in `configureApp()` with the shared `VALIDATION_PIPE_OPTIONS` (see `test-use-testing-module`):
 
 - `whitelist: true` strips properties without decorators; `forbidNonWhitelisted: true` rejects them with a 400 instead, so a client sending `role` or `status` learns it is not accepted.
+- `forbidUnknownValues: true` rejects an object that has no validation metadata. Nest's `ValidationPipe` defaults it to `false`, and then a nested object whose `@Type` was forgotten passes without being validated. A request DTO therefore needs at least one validator.
 - `transform: true` returns DTO instances. Convert query and form values explicitly with `@Type(() => Number)` / `@Type(() => Date)`; do not turn on `enableImplicitConversion`, which converts `'false'` to `true`.
 - Nested objects and arrays need `@ValidateNested()` **and** `@Type(() => Child)`. Without both, the nested payload is not validated at all.
 - Every string has a `@MaxLength`, every array an `@ArrayMaxSize`, every page size a `@Max` (see `api-dto-naming`).

@@ -14,7 +14,7 @@ Conventions:
 - The entity class is **singular** and the table **plural**: `Order` in `order/entities/order.entity.ts` maps to `@Entity('orders')`; `OrderItem` maps to `@Entity('order_items')`. Always pass the table name explicitly (see `arch-feature-modules`).
 - Properties are camelCase; the required `SnakeNamingStrategy` (below) maps them to snake_case columns. Never write column names by hand; the one exception is the foreign key below.
 - Timestamps: `@CreateDateColumn({ type: 'timestamptz' })` and `@UpdateDateColumn({ type: 'timestamptz' })`.
-- Soft deletes: `@DeleteDateColumn({ type: 'timestamptz', nullable: true })`, hidden with `@Exclude()` + `@ApiHideProperty()`.
+- Soft deletes: `@DeleteDateColumn({ type: 'timestamptz', nullable: true })`, hidden with `@Exclude()` + `@ApiHideProperty()`. Delete with `softDelete()` or `softRemove()`; `delete()` and `remove()` still remove the row. `softRemove()` also soft-deletes loaded children whose relation has `cascade: ['soft-remove']`. `find*` and the query builder skip soft-deleted rows; raw SQL filters `deleted_at IS NULL` itself.
 - Complex structured data: `@Column({ type: 'jsonb' })`, plus `nullable: true` or a `default` when the value is optional.
 - Relations: `@ManyToOne` / `@OneToMany`. The owning side declares the foreign key twice, as the relation and as a plain `userId` column, and `@JoinColumn({ name: 'user_id' })` pins both to the same column. The name matches what the naming strategy generates; writing it out keeps the pairing visible and stops a second column appearing when the relation is renamed.
 - Sensitive columns: `@Exclude()` + `@ApiHideProperty()`.

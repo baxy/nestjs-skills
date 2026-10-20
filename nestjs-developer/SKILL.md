@@ -78,7 +78,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 ### 4. Security (HIGH) - `security-`
 
 - `security-validate-all-input` - Global `ValidationPipe`, `class-validator` DTOs, nested objects
-- `security-auth-jwt` - Passport `JwtStrategy` building a complete `JwtUser`
+- `security-auth-jwt` - Passport `JwtStrategy` building a complete `JwtUser`; the refresh exchange rechecks the user
 - `security-hash-passwords` - Argon2id (bcrypt only where already used) in one `PasswordHasher`, uniform login failures
 - `security-use-guards` - Global `JwtAuthGuard` + `RolesGuard`, `@Public()`, `@Roles()`
 - `security-sanitize-output` - Sanitize user HTML, never reflect unvalidated input
@@ -103,7 +103,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 ### 7. Database & ORM (MEDIUM-HIGH) - `db-`
 
 - `db-entity-conventions` - Persistence-only entities, required `SnakeNamingStrategy`, singular class and plural table, named indexes and constraints
-- `db-use-migrations` - `synchronize` hardcoded to `false`; generate structural migrations from entities; verify no drift
+- `db-use-migrations` - `synchronize` hardcoded to `false`; generate structural migrations from entities; verify no drift; run as a deploy step
 - `db-use-transactions` - Transactions for multi-step writes
 - `db-avoid-n-plus-one` - Avoid N+1 queries
 
@@ -114,7 +114,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 - `api-use-pipes` - Param and query DTO classes instead of inline pipes
 - `api-use-mapped-types` - Derive DTOs with `PartialType`/`PickType`/`OmitType`
 - `api-use-dto-serialization` - Hidden columns on entities, response DTOs where the shape differs
-- `api-use-interceptors` - Cross-cutting concerns and the response envelope
+- `api-use-interceptors` - Cross-cutting concerns, the response envelope and the request lifecycle order
 - `api-document-with-openapi` - Described DTO fields, decorated controllers, example conventions
 - `api-custom-param-decorators` - `@AuthUser() authUser: JwtUser` and composed decorators
 - `api-platform-agnostic` - Same code on Express and Fastify: adapter only in `main.ts`, neutral request type, CORS

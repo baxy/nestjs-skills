@@ -48,6 +48,7 @@ it('returns the order', async () => {
 export const VALIDATION_PIPE_OPTIONS: ValidationPipeOptions = {
   whitelist: true,
   forbidNonWhitelisted: true,
+  forbidUnknownValues: true, // Nest defaults it to false (see security-validate-all-input)
   transform: true,
 };
 

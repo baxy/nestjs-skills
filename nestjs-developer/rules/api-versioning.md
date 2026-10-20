@@ -11,6 +11,7 @@ Add a version only for a **breaking** change (a removed or renamed field, a chan
 
 - Use Nest's built-in versioning with one strategy for the whole API: URI versioning (`/v1/users`), enabled in `configureApp()` with `defaultVersion: '1'`, so e2e tests call the same paths as clients (see `test-use-testing-module`). Do not hand-write `v1/` into controller paths, and do not mix strategies.
 - A new version gets its own controller next to the old one (`UserV2Controller` in `controllers/user-v2.controller.ts`) and its own response DTOs (`user-v2-response.dto.ts`). Services stay version-agnostic: versions differ in the controller and the response DTO, never in an `if (version === ...)` in a service.
+- A route that did not change stays in the old controller and lists both versions with `@Version(['1', '2'])` on its handler, so `/v2/...` still reaches it. A route declared for neither version returns 404 under `/v2`.
 - Routes that are not part of the client contract are `VERSION_NEUTRAL`: health probes (see `micro-use-health-checks`) and webhooks keep one stable path.
 - Mark a version as deprecated with `Deprecation`, `Sunset` (the announced removal date) and `Link` headers, set with `@Header()` so they work on both adapters (see `api-platform-agnostic`).
 
@@ -49,6 +50,13 @@ export class UserController {
   @SerializeOptions({ type: UserV1ResponseDto, excludeExtraneousValues: true })
   findById(@Param() params: UserIdParamDto): Promise<User> {
     return this.userService.findById(params.id);
+  }
+
+  @Version(['1', '2']) // Unchanged in v2: one handler serves /v1 and /v2
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  delete(@Param() params: UserIdParamDto): Promise<void> {
+    return this.userService.delete(params.id);
   }
 }
 

@@ -135,4 +135,6 @@ export class OrderService {
 // { success: true, statusCode: 200, data: result, meta: { totalCount: count, limit, offset } }
 ```
 
+**Connection pool.** TypeORM pools connections per DataSource (the `pg` driver defaults to 10). Size it with `poolSize` (or `extra: { max }`) so that pool size times the number of instances, plus migration and admin connections, stays under the database's `max_connections`. Behind a pooler such as PgBouncer, size against the pooler's limit instead.
+
 Reference: [TypeORM Query Builder](https://typeorm.io/select-query-builder)

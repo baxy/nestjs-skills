@@ -12,6 +12,7 @@ Guards and interceptors have injected dependencies (`Reflector`, services), so t
 - Cover the **deny and error paths**, not only the happy path: an authorization test that only proves admins get in never catches a bypass.
 - Vary the caller per request: a test authentication guard, registered before the guards under test, picks the user from a test-only header.
 - Add one check against a real protected route that it rejects an unauthorized caller, to prove the guard is registered where it should be.
+- **Test the real authentication once.** Every other suite replaces `JwtAuthGuard` with the test guard, so a broken `JwtStrategy` (wrong secret, unchecked issuer, accepted expired token) would pass them all. One suite runs the real `JwtAuthGuard` and `JwtStrategy` with a test secret: 401 for a missing, malformed, expired, wrongly signed, wrong-issuer or incomplete token, 200 for a valid one.
 - Pure pieces stay in the unit tier: DTO validation rules are tested by running `ValidationPipe` on the DTO directly.
 
 **Incorrect (hand-built contexts, allow path only):**
@@ -108,6 +109,60 @@ describe('ResponseEnvelopeInterceptor', () => {
     const res = await request(app.getHttpServer()).get('/probe/missing').set('x-test-user', 'admin');
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({ success: false, statusCode: 404, message: 'Probe resource not found' });
+  });
+});
+
+// test/e2e/auth/jwt-auth.guard.spec.ts - the real guard and strategy, tokens signed with a test secret
+// (same ProbeController; move it to test/helpers/ once two specs use it)
+const AUTH_SETTINGS = { jwt: { secret: 'test-secret', issuer: 'test-issuer', audience: 'test-audience', accessTokenTtl: '5m' } };
+const jwtService = new JwtService();
+const sign = (claims: object, options: JwtSignOptions = {}): string =>
+  jwtService.sign(claims, {
+    secret: AUTH_SETTINGS.jwt.secret,
+    issuer: AUTH_SETTINGS.jwt.issuer,
+    audience: AUTH_SETTINGS.jwt.audience,
+    expiresIn: '5m',
+    ...options,
+  });
+const VALID_CLAIMS = { sub: USERS.user.id, email: USERS.user.email, roles: USERS.user.roles };
+
+describe('JwtAuthGuard', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [PassportModule],
+      controllers: [ProbeController],
+      providers: [
+        JwtStrategy, // real
+        { provide: authConfig.KEY, useValue: AUTH_SETTINGS },
+        { provide: APP_GUARD, useClass: JwtAuthGuard }, // real; no RolesGuard, so /probe/admin only needs a token
+      ],
+    }).compile();
+
+    app = await createTestApp(moduleRef);
+  });
+
+  afterAll(() => app.close());
+
+  describe('GET /probe/admin', () => {
+    it('accepts a valid token', async () => {
+      const res = await request(app.getHttpServer()).get('/probe/admin').set('Authorization', `Bearer ${sign(VALID_CLAIMS)}`);
+      expect(res.status).toBe(200);
+    });
+
+    it.each([
+      ['no token', undefined],
+      ['a malformed token', 'not-a-jwt'],
+      ['an expired token', sign(VALID_CLAIMS, { expiresIn: -60 })],
+      ['a token signed with another secret', sign(VALID_CLAIMS, { secret: 'another-secret' })],
+      ['a token from another issuer', sign(VALID_CLAIMS, { issuer: 'another-issuer' })],
+      ['a token missing required claims', sign({ sub: USERS.user.id })],
+    ])('rejects %s with 401', async (_case, token) => {
+      const req = request(app.getHttpServer()).get('/probe/admin');
+      const res = token ? await req.set('Authorization', `Bearer ${token}`) : await req;
+      expect(res.status).toBe(401);
+    });
   });
 });
 

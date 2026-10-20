@@ -26,6 +26,9 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Data access: `@InjectRepository` in the service, no custom repository classes. `arch-use-repository-pattern` was renamed `arch-data-access-in-services` and its direction reversed (S2).
 - No custom `@Global()` modules; only named third-party infrastructure is global (S3, assistant fix). A configurable module is configured once in a module that re-exports it (S5).
 - Work that must succeed with a write (stock reservation) runs inside the owning transaction, not in an event listener (S5).
+- The service that owns a use case orchestrates it; a controller makes one service call (S2).
+- Abstractions are injected through `Symbol` tokens or abstract classes, never string tokens (S2).
+- No property injection, not even for optional dependencies, which use an `@Optional()` constructor parameter (S2).
 
 ## API
 
@@ -49,11 +52,15 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 ## Errors
 
 - Duplicates and concurrent changes are 409; invalid input and broken domain rules (illegal transition, insufficient stock or funds) are 400 (S1 C11, S4 A).
+- Services throw the built-in HTTP exceptions; a domain error class only for a service also used outside HTTP. No Result pattern, no custom exception hierarchy (S2).
+- One global exception filter, extended instead of adding a filter per error type (S2).
 
 ## Security
 
 - `@AuthUser() authUser: JwtUser`, filled only by a passport `JwtStrategy`; global `JwtAuthGuard` + `RolesGuard` with `@Public()` / `@Roles()` (S2).
 - `JwtUser` fields are generic (`id`, `email`, `roles`) **(unconfirmed, S2)**.
+- No per-request user lookup: `JwtUser` is built from the token claims. The refresh exchange reloads the user and refuses a missing or deactivated one; deactivation or deletion revokes refresh tokens (S5).
+- `ValidationPipe` runs with `forbidUnknownValues: true` (S5).
 - Passwords: Argon2id by default; bcrypt accepted only where already used, with the native package, cost 12 or more and a 72-byte limit (S3).
 
 ## Database
@@ -63,6 +70,9 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Migrations generated only; `migration:create` only for data; drift check; lowercase-dash filenames (S1, C4). With no CLI available, no structural migration is written and the commands are handed over (S4).
 - `synchronize` hardcoded to `false`, never read from config (S4).
 - Return entity instances (`create()`, `merge()`), never a spread save (S4). Cache hits are rebuilt as instances (S5).
+- External calls (payment providers, email) happen after the transaction commits, never inside it (S2).
+- Migrations are applied by a separate deploy step, never `migrationsRun: true` (S5).
+- Soft-deletable entities are deleted with `softDelete()` / `softRemove()` (S5).
 
 ## Config, logging, operations
 
@@ -78,6 +88,8 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Four tiers under `test/` (unit, e2e, db, integration); e2e is the real controller and service with mocked repositories over `supertest`; the service under test is never mocked (S1, C5/A9-A11).
 - Guards and interceptors tested through probe controllers (S1, C6).
 - Shared helpers in `test/helpers/` (S4, C).
+- Coverage is measured but no threshold is enforced (S1, A9).
+- The real `JwtAuthGuard` and `JwtStrategy` are tested once, in their own probe suite; every other suite uses the test guard (S5).
 
 ## Style
 
@@ -86,7 +98,8 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 
 ## Reviewer
 
-- On another ORM, check the intent of the `db-` rules; a documented project convention that conflicts is one Suggestion; `style-` violations are Warnings **(unconfirmed, S2)**.
+- On another ORM, check the intent of the `db-` rules; a documented project convention that conflicts is one Suggestion; `style-` violations are Warnings (S2, confirmed S5).
+- A concrete defect that no rule covers can be a Warning, tagged `no rule` and shown with the input that triggers it (S5).
 - A missing required companion (migration, e2e spec) is reported at full severity, with the assumption stated (S4).
 
 ## Packaging

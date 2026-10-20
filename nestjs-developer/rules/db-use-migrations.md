@@ -100,24 +100,20 @@ export class BackfillUserDisplayNames1705313000000 implements MigrationInterface
   }
 }
 
-// Migration datasource for a non-public schema: SET search_path right after connecting
-class SchemaClient extends pg.Client {
-  async connect(): Promise<void> {
-    await super.connect();
-    await this.query(`SET search_path TO "${process.env.DB_SCHEMA}", public`);
-  }
-}
-
+// Migration datasource for a non-public schema: search_path is a connection option, so every
+// pooled connection starts with it (schema first, then public)
 export default new DataSource({
   type: 'postgres',
   schema: process.env.DB_SCHEMA,
   entities: ['src/**/*.entity.ts'],
   migrations: ['migrations/*.ts'],
   namingStrategy: new SnakeNamingStrategy(),
-  extra: { Client: SchemaClient },
+  extra: { options: `-c search_path=${process.env.DB_SCHEMA},public` },
 });
 ```
 
 For large renames, generate the structural steps and put the data copy in a separate `migration:create` migration between them (add column, copy data, drop old column), so each structural step still comes from the entities.
+
+**Applying migrations when deploying.** Run `migration:run` as its own deploy step (a one-off task or init job) that finishes before the new version takes traffic. Do not set `migrationsRun: true`: every replica would run the migrations at startup, at the same time. Until the rollout completes, the previous version still runs against the new schema, which is another reason renames are split into add, copy and drop steps. Roll back with `migration:revert`, which undoes the last applied migration per call.
 
 Reference: [TypeORM Migrations](https://typeorm.io/docs/migrations/why)

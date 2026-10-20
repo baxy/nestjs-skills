@@ -23,6 +23,14 @@ Every successful JSON response has the same shape, produced by `ResponseEnvelope
 - `StreamableFile` (downloads, see `api-controller-conventions`) passes through unwrapped, and so does an empty body (`204`).
 - Never build `{ data: ... }` or `{ success: ... }` in a controller or service.
 
+### Where interceptors sit in a request
+
+Nest runs every request in this order: middleware, guards, interceptors (before the handler), pipes, the handler, interceptors (after, innermost first), exception filters. Within each kind, global runs before controller-level, which runs before route-level. Other rules rely on this:
+
+- Guards run before pipes, so a guard sees raw, unvalidated params and body. It decides from the caller and the route metadata, never from the input (see `security-use-guards`).
+- An exception thrown by a guard skips every interceptor: `LoggingInterceptor` never sees a 401 or 403. The exception filter is the one place that sees every error (see `error-use-exception-filters`).
+- Pipes run after interceptors start, so an interceptor sees the request before `ValidationPipe` has transformed it.
+
 ### Order of global interceptors
 
 `configureApp()` lists them outermost first: `LoggingInterceptor`, then `ResponseEnvelopeInterceptor`, then `ClassSerializerInterceptor` (see `api-use-dto-serialization`). The serializer, innermost, turns the entity or response DTO into a plain object first; the envelope then wraps that.
