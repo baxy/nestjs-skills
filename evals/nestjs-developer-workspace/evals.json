@@ -1,0 +1,51 @@
+{
+  "skill_name": "nestjs-developer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "eval-1-cancel-order",
+      "prompt": "We have a NestJS orders API (TypeORM on Postgres). There's already an Order entity with a status of pending, paid, shipped or canceled, and an OrderModule with OrderService and OrderController. Add the ability for a customer to cancel their own order. Only pending or paid orders can be canceled; shipped ones can't. The customer can optionally give a reason, up to 500 characters. Include the e2e tests. Write the new and changed files as they'd appear in the repo.",
+      "expectations": [
+        "Cancel is a POST /orders/:id/cancel action, not a status PATCH",
+        "Cancel handler sets @HttpCode(HttpStatus.OK)",
+        "Canceling a shipped order throws BadRequestException (400); 409 only for a concurrent change",
+        "Service signature is cancel(authUser, id, dto)",
+        "CancelOrderDto in dtos/cancel-order.dto.ts with @MaxLength(500) and a described @ApiPropertyOptional",
+        "E2E spec at test/e2e/order/order.spec.ts using shared helpers from test/helpers/",
+        "No per-route @UseGuards",
+        "No hand-written structural migration (db-use-migrations)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "eval-2-infra-bootstrap",
+      "prompt": "Set up the infrastructure wiring for a new NestJS service: Postgres via TypeORM, Redis used for both caching and BullMQ queues, JWT auth where we issue our own tokens (just the config and the passport strategy, no login endpoint yet), and a nightly purge of expired refresh tokens. It runs as 3 replicas on Kubernetes. I need the config files, app.module.ts, main.ts, the refresh token entity and the purge job. No feature endpoints.",
+      "expectations": [
+        "TypeORM synchronize is hardcoded to false, not read from config",
+        "Auth env vars use the AUTH_ prefix only (no AUTH0_)",
+        "Module factories inject the config namespace (no per-key ConfigService.getOrThrow)",
+        "Nightly purge is a BullMQ job scheduler, not @Cron",
+        "Refresh token stored only as a hash",
+        "Indexes and constraints named explicitly (IDX_/UQ_)",
+        "validate-env requires AUTH_JWT_SECRET, ISSUER and AUDIENCE",
+        "SnakeNamingStrategy on the app and the migration DataSource"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "eval-3-signup-login",
+      "prompt": "Add signup (create a user) and login to our NestJS API, passwords hashed with argon2. Emails must be case-insensitive: Jane@Example.com and jane@example.com are the same account. Also add a database-tier test proving the unique email constraint works, plus e2e tests for both endpoints. Existing code: a UserModule with a User entity (id, name, email, createdAt) and nothing else.",
+      "expectations": [
+        "CreateUserDto trims and lowercases the email",
+        "Login DTO lowercases the email too",
+        "Unique constraint named UQ_users_..., db test asserts on the name with a savepoint",
+        "Duplicate signup returns 409 ConflictException",
+        "Unknown email and wrong password get the same 401 message",
+        "passwordHash has @Exclude() + @ApiHideProperty()",
+        "Login is POST /sessions; specs in test/e2e/user, test/e2e/auth, test/db/user; helpers from test/helpers",
+        "PasswordHasher not exported from UserModule",
+        "No hand-written structural migration (db-use-migrations)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "skill_name": "nestjs-reviewer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "eval-1-pr142-planted",
+      "prompt": "Review PR #142. The changed files are in /Users/adriansabau/workspace/claude-skills/nestjs-reviewer-workspace/fixtures/pr-142-order-cancel (start with PR.md there; there is no git history, review the files as the diff).",
+      "expectations": [
+        "Flags @Public() on the admin DELETE route as Critical",
+        "Flags synchronize read from config",
+        "Flags 409 for an illegal state transition (should be 400)",
+        "Flags the AUTH0_ env var prefix (should be AUTH_)",
+        "Flags the TypeORM factory reading per key via ConfigService instead of the namespace",
+        "Flags the missing @HttpCode(HttpStatus.OK) on the cancel action",
+        "Flags the missing @MaxLength on reason",
+        "Does not flag UserService.findById(id) for lacking authUser",
+        "Does not flag process.exit(1) in the crash handler",
+        "Does not flag nested DTO fields without an example",
+        "Does not flag test helpers in test/helpers/"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "eval-2-pr157-planted",
+      "prompt": "Review PR #157. The changed files are in /Users/adriansabau/workspace/claude-skills/nestjs-reviewer-workspace/fixtures/pr-157-token-purge-cache (start with PR.md there; there is no git history, review the files as the diff).",
+      "expectations": [
+        "Flags the plaintext refresh token as Critical",
+        "Flags @Cron for a cluster-wide job on 3 replicas",
+        "Flags the unnamed unique index",
+        "Flags 409 for insufficient stock (should be 400)",
+        "Flags the listener without try/catch",
+        "Flags CacheModule registered in a feature module",
+        "Flags Redis read per key via ConfigService instead of the namespace",
+        "Does not flag the required jsonb column"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "eval-3-pr163-clean",
+      "prompt": "Review PR #163. The changed files are in /Users/adriansabau/workspace/claude-skills/nestjs-reviewer-workspace/fixtures/pr-163-order-cancel-clean (start with PR.md there; there is no git history, review the files as the diff).",
+      "expectations": [
+        "No Critical other than the missing migration (a missing column breaks the endpoint, which the severity table rates Critical)",
+        "Every Warning is a genuine rule violation (no false positives)",
+        "Does not flag BadRequestException for the illegal state transition",
+        "Does not flag UserService.findById(id) for lacking authUser",
+        "Does not flag process.exit(1) in the crash handler",
+        "Does not flag test helpers in test/helpers/",
+        "Does not flag the required jsonb shippingAddress column",
+        "Flags the missing migration for the new cancelReason column (Warning or Critical)",
+        "Flags save({...order}) leaking @Exclude columns",
+        "Flags the per-replica throttler storage on 3 replicas",
+        "Flags the untrusted proxy behind the NGINX ingress"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "eval-4-pr171-heldout",
+      "prompt": "Review PR #171. The changed files are in /Users/adriansabau/workspace/claude-skills/nestjs-reviewer-workspace/fixtures/pr-171-user-profile (start with PR.md there; there is no git history, review the files as the diff).",
+      "expectations": [
+        "Flags save({...user, ...dto}) leaking passwordHash as Critical",
+        "Flags the new phoneNumber column without a migration",
+        "Flags the page size without @Max (query DTO not extending PaginationQueryDto)",
+        "Flags findAll returning a bare array instead of PaginatedResult",
+        "Flags the nested address missing @Type(() => AddressDto)",
+        "Flags the Express @Res() response in a handler",
+        "Flags the N+1 loop in OrderHistoryService",
+        "Flags the private method without the _ prefix",
+        "Flags the British spelling 'organisation'",
+        "Flags the em dash in a comment",
+        "Does not flag new Logger(Class.name)",
+        "Does not flag @UseInterceptors(new TimeoutInterceptor(10_000))",
+        "Does not flag returning the User entity from findById",
+        "Does not flag UserService.findById(id) for lacking authUser"
+      ]
+    }
+  ]
+}
