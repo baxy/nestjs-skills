@@ -45,7 +45,7 @@ export function buildLoggerModule(): DynamicModule {
     inject: [ClsService, appConfig.KEY],
     useFactory: (cls: ClsService, appSettings: ConfigType<typeof appConfig>): Params => ({
       pinoHttp: {
-        autoLogging: false,          // A logging interceptor logs request start/finish
+        autoLogging: false,          // LoggingInterceptor logs successes, the exception filter logs failures
         base: undefined,             // Drop pid/hostname noise
         quietReqLogger: true,
         mixin: () => ({ requestId: cls.getId() }), // On every line, no call-site work

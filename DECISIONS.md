@@ -44,6 +44,8 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Response envelope `{ success, statusCode, data, meta }` and error `{ success: false, statusCode, error, message }` (S1, C9).
 - Returning an entity is fine with `@Exclude()` + `@ApiHideProperty()` on hidden columns; a response DTO is used when the shape differs; a request body is never bound to an entity (S1, C2).
 - Swagger: `description` + `example` on every DTO field, `summary` + `description` on every endpoint, spec in every environment, nil UUID, fictional dates, `+` for long descriptions, no `servers` with a global prefix (S1, C3/A7). Nested-DTO fields need no `example` of their own (S4).
+- Success responses are documented inside the envelope with `@ApiEnvelopedResponse` / `@ApiPaginatedResponse`; still recommended, not required (S5).
+- `@SerializeOptions({ type })` only for a handler returning one object or an array; a paginated handler's items are converted in the service (S5).
 - Uploads with `nestjs-form-data` (S1, A8).
 - Express/Fastify agnostic: adapter only in `main.ts` and `createTestApp()`; `HttpAdapterHost`; neutral `AppRequest` (S1).
 - Auth flows as resources (`POST /sessions`, `POST /password-resets`) **(unconfirmed, S2)**.
@@ -80,6 +82,7 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Env prefixes per concern; all auth settings use `AUTH_*`, never a vendor prefix such as `AUTH0_` (S4).
 - `redis` namespace with `host` / `port` **(unconfirmed, S2)**.
 - Logging: `bufferLogs` + `useLogger`, Nest `Logger` in app code, request IDs as fields, `console.error` in crash handlers (S1, A12).
+- Request log lines: `LoggingInterceptor` for successes, the exception filter for every failure (5xx error, others warn), pino `autoLogging` off (S5).
 - Event names `{object}.{action}`, past tense, underscore for multi-word objects; nothing else ported from Anthill events (S1, A13).
 - `@Cron` only for per-instance work; cluster-wide jobs are BullMQ job schedulers (S4, B).
 

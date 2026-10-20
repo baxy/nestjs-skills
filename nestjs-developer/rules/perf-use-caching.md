@@ -12,7 +12,7 @@ Cache data that is expensive to compute and read far more often than it changes.
 - Use `@nestjs/cache-manager` with a shared store (Redis) when more than one instance runs; an in-memory cache differs per instance. The connection comes from the `redis` config namespace (`redis.host`, `redis.port`, see `devops-use-config-module`), shared with the queues (see `micro-use-queues`).
 - TTLs are in **milliseconds** (cache-manager v5 and later).
 - **Caller-dependent data needs the caller in the key.** The built-in `CacheInterceptor` keys by URL only, so use it only on routes whose response is the same for every caller (public catalogs, reference data). Everything else is cached in the service, with the user or organization id in the key.
-- **A cache hit is a plain object, not an entity.** The shared store keeps JSON, so `ClassSerializerInterceptor` skips `@Exclude()` on what comes back (see `api-use-dto-serialization`) and hidden columns reach the client. In the service, rebuild instances on read with `plainToInstance(Entity, cached)`. On a route cached by `CacheInterceptor`, add `@SerializeOptions({ type: Entity })` so the serializer converts the cached value before applying `@Exclude()`.
+- **A cache hit is a plain object, not an entity.** The shared store keeps JSON, so `ClassSerializerInterceptor` skips `@Exclude()` on what comes back (see `api-use-dto-serialization`) and hidden columns reach the client. In the service, rebuild instances on read with `plainToInstance(Entity, cached)`. On a route cached by `CacheInterceptor`, add `@SerializeOptions({ type: Entity })` so the serializer converts the cached value before applying `@Exclude()`. That works only when the route returns one entity or an array; a paginated route is cached in the service instead, where each item is rebuilt (see `api-use-dto-serialization`).
 - Invalidate on write: delete the affected keys in the service method that changes the data, or in a listener for the change event (see `arch-use-events`).
 - Interceptors only run on controllers and handlers; `@UseInterceptors(CacheInterceptor)` on a service method does nothing.
 
@@ -96,9 +96,9 @@ export class CategoryController {
   @Public()
   @CacheTTL(30 * 60_000) // 30 min: categories rarely change
   @SerializeOptions({ type: Category }) // Cache hits are plain objects: convert them so @Exclude() still applies
-  @Get()
-  findAll(): Promise<Category[]> {
-    return this.categoryService.findAll();
+  @Get(':id')
+  findById(@Param() params: CategoryIdParamDto): Promise<Category> {
+    return this.categoryService.findById(params.id);
   }
 }
 ```

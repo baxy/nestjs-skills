@@ -18,6 +18,7 @@ Never catch exceptions and format error responses in controllers. Services throw
 - Read the message from `exception.getResponse()`, not `exception.message`: for `ValidationPipe` errors it holds the per-field messages, while `exception.message` is just "Bad Request Exception".
 - Translate known non-HTTP errors here: a unique violation (`QueryFailedError` with PostgreSQL code `23505`) becomes 409, a domain error class shared with non-HTTP consumers becomes its status. Match on error codes, never on message text.
 - Unknown errors become a generic 500. Log the stack and the `cause`; never send either to the client.
+- Every failed request gets one log line here: a 5xx at error level with the stack, any other status at warn level with the method, URL and status. Guards reject a request before any interceptor runs, so this filter is the only place that sees a 401, 403 or 429 (see `api-use-interceptors`).
 - When translating a lower-level error yourself, keep it as the `cause` so logs show the root cause.
 
 **Incorrect (manual error handling in controllers, Express-only filters):**
@@ -85,15 +86,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest();
     const statusCode = this._status(exception);
+    const requestLine = `${httpAdapter.getRequestMethod(request)} ${httpAdapter.getRequestUrl(request)} ${statusCode}`;
 
     if (statusCode >= 500) {
-      this.logger.error(
-        `${httpAdapter.getRequestMethod(request)} ${httpAdapter.getRequestUrl(request)}`,
-        exception instanceof Error ? exception.stack : exception,
-      );
+      this.logger.error(requestLine, exception instanceof Error ? exception.stack : exception);
       if (exception instanceof Error && exception.cause) {
         this.logger.error('Caused by', exception.cause);
       }
+    } else {
+      this.logger.warn(requestLine); // The only log line for a 401, 403 or 429: guards run before interceptors
     }
 
     const body: ApiErrorResponse = {

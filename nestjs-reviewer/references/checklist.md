@@ -51,6 +51,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 ## Swagger / OpenAPI
 - [ ] Every controller has one `@ApiTags` and a security decorator (`@ApiBearerAuth('bearer')`) [api-document-with-openapi]
 - [ ] Every method has `@ApiOperation` with `summary` and `description` [api-document-with-openapi]
+- [ ] A documented success response uses `@ApiEnvelopedResponse(X)` or `@ApiPaginatedResponse(X)`, never a plain `@ApiOkResponse({ type: X })`, which documents the body without the envelope [api-document-with-openapi]
 - [ ] Endpoint-specific error statuses documented (`@ApiNotFoundResponse`, `@ApiConflictResponse`...); recommended, so a missing one is a Suggestion [api-document-with-openapi]
 - [ ] Every new or changed DTO field has `@ApiProperty`/`@ApiPropertyOptional` with `description` and `example` (a nested-DTO field takes its example from the nested DTO) [api-document-with-openapi]
 - [ ] Examples are realistic, UUID examples use the nil UUID, dates are fictional ISO 8601 [api-document-with-openapi]
@@ -83,6 +84,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] **Critical:** every sensitive column returned through an entity has `@Exclude()` + `@ApiHideProperty()` [api-use-dto-serialization]
 - [ ] Returning an entity is fine; a response DTO is used where the shape differs (do not flag entity returns by themselves) [api-use-dto-serialization]
 - [ ] **Critical:** an entity turned into a response DTO (`@SerializeOptions({ type })` or `plainToInstance()`) uses `excludeExtraneousValues: true`; otherwise every column, hidden ones included, is returned [api-use-dto-serialization]
+- [ ] **Critical:** `@SerializeOptions({ type })` only on a handler returning one object or an array; on a paginated handler it converts the `PaginatedResult` wrapper (the page arrives as `data: {}`, or the items skip `@Exclude()`), so a page of response DTOs is converted item by item in the service [api-use-dto-serialization]
 - [ ] Request bodies never bound to entities [api-use-dto-serialization]
 - [ ] Entities returned to a client are class instances: `create()` for new rows, `merge()` for updates, never `save({ ...entity })` or `manager.save(Entity, { ... })`, which return plain objects that skip `@Exclude()`. **Critical** when a sensitive column such as `passwordHash` leaks this way [api-use-dto-serialization]
 - [ ] `SnakeNamingStrategy` configured on every DataSource (app and migration CLI); no per-column `name:` overrides [db-entity-conventions]
@@ -113,6 +115,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] Filters use `HttpAdapterHost`, not Express `response.status().json()` [error-use-exception-filters]
 - [ ] Filter keeps ValidationPipe field messages (reads `getResponse()`, not `.message`) [error-use-exception-filters]
 - [ ] Error responses don't expose stack traces or SQL errors; wrapped errors keep `{ cause }` [error-use-exception-filters]
+- [ ] The filter logs every failed request (5xx at error with the stack, others at warn); `LoggingInterceptor` logs successes only, since guard rejections (401, 403, 429) never reach it [error-use-exception-filters]
 - [ ] Async errors awaited/handled; no floating promises [error-handle-async-errors]
 
 ## Database and Migrations
@@ -156,7 +159,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 
 ## Performance
 - [ ] Caching for expensive, frequently read data with invalidation [perf-use-caching]
-- [ ] **Critical:** cached entities are rebuilt with `plainToInstance` (service) or `@SerializeOptions({ type })` (`CacheInterceptor` route); a cache hit returned as a plain object skips `@Exclude()` [perf-use-caching]
+- [ ] **Critical:** cached entities are rebuilt with `plainToInstance` (service) or `@SerializeOptions({ type })` (`CacheInterceptor` route returning one entity or an array; a paginated route is cached in the service); a cache hit returned as a plain object skips `@Exclude()` [perf-use-caching]
 - [ ] No blocking work in lifecycle hooks or the event loop [perf-async-hooks]
 - [ ] Long-running or must-succeed work on BullMQ queues (`WorkerHost` processors); cluster-wide schedules as job schedulers, not `@Cron` [micro-use-queues]
 

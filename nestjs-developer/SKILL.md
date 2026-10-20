@@ -115,7 +115,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 - `api-use-mapped-types` - Derive DTOs with `PartialType`/`PickType`/`OmitType`
 - `api-use-dto-serialization` - Hidden columns on entities, response DTOs where the shape differs
 - `api-use-interceptors` - Cross-cutting concerns, the response envelope and the request lifecycle order
-- `api-document-with-openapi` - Described DTO fields, decorated controllers, example conventions
+- `api-document-with-openapi` - Described DTO fields, decorated controllers, success responses inside the envelope, example conventions
 - `api-custom-param-decorators` - `@AuthUser() authUser: JwtUser` and composed decorators
 - `api-platform-agnostic` - Same code on Express and Fastify: adapter only in `main.ts`, neutral request type, CORS
 - `api-file-uploads` - Validated multipart uploads with `nestjs-form-data`

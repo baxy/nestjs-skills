@@ -13,7 +13,7 @@ Generate API documentation from the code with `@nestjs/swagger` and its CLI plug
 - **Never duplicate validator information** in `@ApiProperty`: no `type`, `required`, `format` or `enum` when a validator already says it.
 - **Every controller** has exactly one `@ApiTags(...)` named after the resource, plus its security decorator (for example `@ApiBearerAuth('bearer')`). Do not document dev-only auth schemes.
 - **Every endpoint** has `@ApiOperation` with both `summary` and `description`.
-- Response decorators (`@ApiOkResponse`, `@ApiCreatedResponse`) are recommended when the endpoint returns a response DTO (see `api-use-dto-serialization`), not required otherwise.
+- **Success responses are documented inside the envelope.** Every JSON body is wrapped as `{ success, statusCode, data }` (see `api-use-interceptors`), so a plain `@ApiOkResponse({ type: X })` documents the wrong shape. Use `@ApiEnvelopedResponse(X)` for one object or an array (`isArray: true`) and `@ApiPaginatedResponse(X)` for a paginated list, both in `src/shared/swagger/`. They are recommended when the endpoint returns a response DTO (see `api-use-dto-serialization`), not required otherwise; a documented success response always uses one of the two.
 - Error responses specific to the endpoint are recommended too, each with a description of when it happens: `@ApiNotFoundResponse` for a missing resource, `@ApiConflictResponse` for a duplicate, `@ApiBadRequestResponse` for a broken domain rule, `@ApiForbiddenResponse` for a role check.
 - Expose the spec in every environment where clients need it; do not hide it behind `NODE_ENV`.
 
@@ -56,6 +56,10 @@ export class OrderController {
   })
   @Post()
   create(@Body() dto: CreateOrderDto) { /* ... */ }
+
+  @ApiOkResponse({ type: [OrderSummaryResponseDto] }) // Documents a bare array; the body is the paginated envelope
+  @Get()
+  findAll(@Query() query: FindAllOrdersQueryDto) { /* ... */ }
 }
 ```
 
@@ -123,6 +127,75 @@ export class OrderController {
   findById(@AuthUser() authUser: JwtUser, @Param() params: OrderIdParamDto): Promise<Order> {
     return this.orderService.findById(authUser, params.id);
   }
+
+  @ApiOperation({
+    summary: 'List orders',
+    description: 'Returns the authenticated user\'s orders, newest first, one page at a time.',
+  })
+  @ApiPaginatedResponse(OrderSummaryResponseDto, 'One page of orders')
+  @Get()
+  findAll(
+    @AuthUser() authUser: JwtUser,
+    @Query() query: FindAllOrdersQueryDto,
+  ): Promise<PaginatedResult<OrderSummaryResponseDto>> {
+    return this.orderService.findAll(authUser, query);
+  }
+}
+
+// shared/swagger/api-enveloped-response.decorator.ts - the success envelope around one object or an array
+export interface ApiEnvelopedResponseOptions {
+  description: string;
+  status?: HttpStatus;
+  isArray?: boolean;
+}
+
+export function ApiEnvelopedResponse(model: Type<unknown>, options: ApiEnvelopedResponseOptions) {
+  const status = options.status ?? HttpStatus.OK;
+  const item = { $ref: getSchemaPath(model) };
+  return applyDecorators(
+    ApiExtraModels(model), // getSchemaPath only resolves models registered with the document
+    ApiResponse({
+      status,
+      description: options.description,
+      schema: {
+        type: 'object',
+        required: ['success', 'statusCode', 'data'],
+        properties: {
+          success: { type: 'boolean', example: true },
+          statusCode: { type: 'integer', example: status },
+          data: options.isArray ? { type: 'array', items: item } : item,
+        },
+      },
+    }),
+  );
+}
+
+// shared/swagger/api-paginated-response.decorator.ts - data plus meta, as the envelope builds it from PaginatedResult
+export function ApiPaginatedResponse(model: Type<unknown>, description: string) {
+  return applyDecorators(
+    ApiExtraModels(model),
+    ApiOkResponse({
+      description,
+      schema: {
+        type: 'object',
+        required: ['success', 'statusCode', 'data', 'meta'],
+        properties: {
+          success: { type: 'boolean', example: true },
+          statusCode: { type: 'integer', example: 200 },
+          data: { type: 'array', items: { $ref: getSchemaPath(model) } },
+          meta: {
+            type: 'object',
+            required: ['totalCount', 'limit', 'offset'],
+            properties: {
+              totalCount: { type: 'integer', description: 'Rows matching the query across all pages', example: 42 },
+              limit: { type: 'integer', description: 'Page size', example: 20 },
+              offset: { type: 'integer', description: 'Rows skipped before this page', example: 0 },
+            },
+          },
+        },
+      },
+    }),
+  );
 }
 ```
 

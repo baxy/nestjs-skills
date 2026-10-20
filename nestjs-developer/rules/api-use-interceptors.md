@@ -28,7 +28,7 @@ Every successful JSON response has the same shape, produced by `ResponseEnvelope
 Nest runs every request in this order: middleware, guards, interceptors (before the handler), pipes, the handler, interceptors (after, innermost first), exception filters. Within each kind, global runs before controller-level, which runs before route-level. Other rules rely on this:
 
 - Guards run before pipes, so a guard sees raw, unvalidated params and body. It decides from the caller and the route metadata, never from the input (see `security-use-guards`).
-- An exception thrown by a guard skips every interceptor: `LoggingInterceptor` never sees a 401 or 403. The exception filter is the one place that sees every error (see `error-use-exception-filters`).
+- An exception thrown by a guard skips every interceptor, and a request to an unknown route never reaches one, so `LoggingInterceptor` never sees a 401, 403, 429 (the throttler is a guard) or a 404 for a missing route. The exception filter is the one place that sees every error, so it writes the log line for every failed request and `LoggingInterceptor` logs successes only (see `error-use-exception-filters`).
 - Pipes run after interceptors start, so an interceptor sees the request before `ValidationPipe` has transformed it.
 
 ### Order of global interceptors
@@ -99,7 +99,8 @@ export class ResponseEnvelopeInterceptor implements NestInterceptor {
   }
 }
 
-// shared/interceptors/logging.interceptor.ts - one line per request; requestId comes from the
+// shared/interceptors/logging.interceptor.ts - one line per successful request; failed requests are
+// logged by the exception filter, which also sees guard rejections. requestId comes from the
 // pino mixin (see devops-use-logging), never from the message text
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -110,15 +111,9 @@ export class LoggingInterceptor implements NestInterceptor {
     const startedAt = Date.now();
 
     return next.handle().pipe(
-      tap({
-        next: () => {
-          const { statusCode } = context.switchToHttp().getResponse();
-          this.logger.log(`${request.method} ${request.url} ${statusCode} ${Date.now() - startedAt}ms`);
-        },
-        error: (error: unknown) => {
-          const status = error instanceof HttpException ? error.getStatus() : 500;
-          this.logger.warn(`${request.method} ${request.url} ${status} ${Date.now() - startedAt}ms`);
-        },
+      tap(() => {
+        const { statusCode } = context.switchToHttp().getResponse();
+        this.logger.log(`${request.method} ${request.url} ${statusCode} ${Date.now() - startedAt}ms`);
       }),
     );
   }

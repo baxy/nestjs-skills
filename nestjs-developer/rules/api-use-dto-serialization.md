@@ -92,7 +92,7 @@ export class UserController {
 
   // Different shape: use a response DTO
   @Get(':id/summary')
-  @ApiOkResponse({ type: UserSummaryResponseDto })
+  @ApiEnvelopedResponse(UserSummaryResponseDto, { description: 'The user with their order count' }) // See api-document-with-openapi
   async findSummary(@Param() params: UserIdParamDto): Promise<UserSummaryResponseDto> {
     const user = await this.userService.findByIdWithOrders(params.id);
     return plainToInstance(UserSummaryResponseDto, user, { excludeExtraneousValues: true });
@@ -142,6 +142,25 @@ return this.userRepository.save({ ...user, ...dto });
 
 // Correct: merge into the loaded instance; the serializer still sees a User
 return this.userRepository.save(this.userRepository.merge(user, dto));
+```
+
+**`@SerializeOptions({ type })` is for a handler that returns one object or an array.** The serializer converts what the handler returns, and a paginated handler returns the `PaginatedResult` wrapper (`{ result, count, limit, offset }`, see `perf-optimize-database`), not the items. With `excludeExtraneousValues: true` every page then arrives as `data: {}`; without it the items are never converted. A page of entities needs nothing, because the serializer applies `@Exclude()` to the entity instances inside the wrapper. A page of response DTOs is converted item by item in the service:
+
+```typescript
+// Incorrect: converts the wrapper, so the client gets data: {}
+@SerializeOptions({ type: UserListItemResponseDto, excludeExtraneousValues: true })
+@Get()
+findAll(@Query() query: FindAllUsersQueryDto): Promise<PaginatedResult<User>> {
+  return this.userService.findAll(query);
+}
+
+// Correct: the service converts each item; the serializer leaves the wrapper alone
+return {
+  result: users.map((user) => plainToInstance(UserListItemResponseDto, user, { excludeExtraneousValues: true })),
+  count,
+  limit: query.limit,
+  offset: query.offset,
+};
 ```
 
 Reference: [NestJS Serialization](https://docs.nestjs.com/techniques/serialization)
