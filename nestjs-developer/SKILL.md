@@ -145,6 +145,6 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 ### 11. DevOps & Deployment (LOW-MEDIUM) - `devops-`
 
-- `devops-use-config-module` - One `registerAs` file per concern, namespaced keys, `validate` hook
+- `devops-use-config-module` - `src/config/` folder (not a module): one `registerAs` file per concern, namespaced keys, `validate` hook
 - `devops-use-logging` - Structured pino logging with correlation fields
 - `devops-graceful-shutdown` - Zero-downtime deployments

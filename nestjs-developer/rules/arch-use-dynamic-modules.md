@@ -7,7 +7,9 @@ tags: architecture, modules, dynamic-modules, configuration
 
 ## Make Reusable Modules Configurable
 
-When a module wraps infrastructure that needs configuration (mail, storage, an API client) and is reused across apps or instantiated more than once, expose it as a dynamic module with `forRoot`/`forRootAsync` instead of reading `process.env` inside it or hardcoding values. A module used by one app only can inject its config namespace directly (see `devops-use-config-module`). Use `ConfigurableModuleBuilder` to generate the static methods, the options token, and the async variant instead of writing them by hand. Always provide the async variant so consumers can build options from `ConfigService`.
+When a module wraps infrastructure that needs configuration (mail, storage, an API client) and is reused across apps or instantiated more than once, expose it as a dynamic module with `forRoot`/`forRootAsync` instead of reading `process.env` inside it or hardcoding values. A module used by one app only can inject its config namespace directly (see `devops-use-config-module`). Use `ConfigurableModuleBuilder` to generate the static methods, the options token, and the async variant instead of writing them by hand. Always provide the async variant so consumers can build options from their config namespace.
+
+The options interface is the module's whole configuration contract. The module never imports from the app's `src/config/`, injects `ConfigService` or reads `process.env`: those tie it to one app's variable names. The app maps its own namespace into the options (see `devops-use-config-module`). A module shared by several apps in a monorepo lives as a library under `libs/` (`nest g library`), where it cannot reach an app's `src/config/` at all.
 
 **Incorrect (config read inside the module, or a hand-rolled sync-only forRoot):**
 

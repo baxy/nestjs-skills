@@ -80,6 +80,7 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 ## Config, logging, operations
 
 - One `registerAs` file per concern, namespaced keys, `validate` hook; `process.env` only in `src/config/` and the migration DataSource (S2).
+- `src/config/` is a folder, not a module: `ConfigModule` registered once in `AppModule`, every setting there (feature modules' too), no `ConfigModule.forFeature()`, only `{concern}.config.ts` and `validate-env.ts`, one name across file, constant, namespace and variable prefix. A module meant for reuse has its configuration as a typed options contract (`ConfigurableModuleBuilder`), never reading `src/config/`, `ConfigService` or `process.env`; the app maps its namespace into those options. Matches the Anthill governance and aom layout; their `synchronize` from env and missing `validate` hook are findings for their owners (S7, the user's request).
 - Env prefixes per concern; all auth settings use `AUTH_*`, never a vendor prefix such as `AUTH0_` (S4).
 - `redis` namespace with `host` / `port` **(unconfirmed, S2)**.
 - Logging: `bufferLogs` + `useLogger`, Nest `Logger` in app code, request IDs as fields, `console.error` in crash handlers (S1, A12).

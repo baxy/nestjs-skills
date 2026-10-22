@@ -152,6 +152,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] **Critical:** passwords never stored plain, fast-hashed (MD5, SHA) or encrypted [security-hash-passwords]
 - [ ] Passwords hashed by one non-exported `UserPasswordHasher`: Argon2id, or bcrypt (native package, cost 12 or more, `@IsByteLength(1, 72)`) only in a project already on bcrypt; login answers unknown email and wrong password identically [security-hash-passwords]
 - [ ] Secrets only in environment/config; `process.env` read only in `src/config/` and the migration DataSource; required variables checked by the `validate` hook [devops-use-config-module]
+- [ ] `src/config/` holds only `{concern}.config.ts` files and `validate-env.ts`; no `config.module.ts`, no config files inside feature modules, no `ConfigModule.forFeature()`; a module meant for reuse takes typed options through `forRootAsync` and never reads `src/config/`, `ConfigService` or `process.env` itself; file, constant, namespace and variable prefix share one name (`event-bridge.config.ts`, `eventBridgeConfig`, `eventBridge`, `EVENT_BRIDGE_*`) [devops-use-config-module]
 - [ ] Environment variables carry their concern's prefix (`APP_`, `DB_`, `REDIS_`...); every authentication setting is `AUTH_*`, never a provider-specific prefix such as `AUTH0_` [devops-use-config-module]
 
 ## Testing

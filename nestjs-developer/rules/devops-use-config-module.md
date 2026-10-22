@@ -16,6 +16,15 @@ Use `@nestjs/config` with **one config file per concern**. Each file maps enviro
 - Environment variables are grouped by prefix per concern (`APP_`, `DB_`, `AWS_`, `AUTH_`, `EVENT_BRIDGE_`, `REDIS_`). Every authentication setting uses `AUTH_` (`AUTH_JWT_SECRET`), whichever identity provider issues the tokens: a provider-specific prefix such as `AUTH0_` ties the names to one vendor. Defaults and parsing (`parseInt(..., 10)`, `=== 'true'`, splitting lists) happen in the config file, so consumers receive typed values.
 - All files are loaded once, in `AppModule`: `ConfigModule.forRoot({ isGlobal: true, load: [...], validate: validateEnv })`.
 
+**`src/config/` is a folder, not a module:**
+
+- There is no `config.module.ts` and no module of our own around configuration. The only configuration module is `@nestjs/config`'s `ConfigModule`, registered once in `AppModule` (the same way `src/shared/` holds files and no module, see `arch-shared-folder`).
+- Every setting lives here, including the ones a single feature module uses: the encryption module's settings are `src/config/encryption.config.ts`, never `encryption/config/`. All environment variables are then found in one folder.
+- No `ConfigModule.forFeature()` in feature modules: a namespace registered there skips the single load in `AppModule` and the `validate` hook.
+- **A module meant for reuse** (in another app, as a library under `libs/`, or instantiated more than once) has its own configuration as a typed options contract, not as environment variables: it is a configurable module (see `arch-use-dynamic-modules`) and never imports from `src/config/`, injects `ConfigService` or reads `process.env`. Each app that uses it keeps the variables in its own `src/config/` and maps that namespace into the module's options in `forRootAsync`. Every variable stays in one folder, and the module works in any app and in tests with plain values.
+- The folder holds only `{concern}.config.ts` files and `validate-env.ts`. A function that builds a module's options from a namespace (the TypeORM options, a client's settings) lives where it is used.
+- One name in four forms: the file `event-bridge.config.ts` exports `eventBridgeConfig` for the namespace `eventBridge`, read from `EVENT_BRIDGE_*` variables.
+
 **Required values are validated at load.** A config file that defaults a missing variable to `''` hides it: `getOrThrow` treats an empty string as defined, so the service starts, passes its health check and fails every request. `src/config/validate-env.ts` lists the variables the service cannot run without and refuses to start when one is missing or malformed. Because it is the `validate` hook of `ConfigModule`, it runs wherever `AppModule` is built: the app itself and the integration tier (e2e testing modules do not import `AppModule`, see `test-use-testing-module`).
 
 **Reading settings:**
