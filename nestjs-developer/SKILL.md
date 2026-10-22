@@ -28,14 +28,14 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 | Task | Rules to read |
 |---|---|
 | New project | `references/project-setup.md` (`nest new`, ESM with Vitest), `references/test-runner-vitest.md`, `test-organize-by-tier`, `test-use-testing-module` (`configureApp()`), `devops-use-config-module`, `arch-import-boundaries` |
-| New feature module | `arch-feature-modules`, `arch-import-boundaries`, `arch-module-sharing`, `arch-avoid-circular-deps`, `arch-service-conventions`, `arch-data-access-in-services` |
+| New feature module | `arch-feature-modules`, `arch-resource-naming`, `arch-import-boundaries`, `arch-module-sharing`, `arch-avoid-circular-deps`, `arch-service-conventions`, `arch-data-access-in-services` |
 | New or changed service or provider | `arch-service-conventions`, `arch-single-responsibility`, `arch-data-access-in-services`, `di-prefer-constructor-injection`, `di-scope-awareness`, `error-throw-http-exceptions` |
 | Swappable implementation (interface, token, test double) | `di-use-interfaces-tokens`, `di-interface-segregation`, `di-liskov-substitution`, `di-avoid-service-locator` |
 | New or changed endpoint | `api-controller-conventions`, `api-dto-naming`, `api-use-pipes`, `security-validate-all-input`, `api-document-with-openapi`, `api-use-dto-serialization`, `security-use-guards` (`@Public()`/`@Roles()`), `api-custom-param-decorators`, `error-throw-http-exceptions` |
 | Update or derived DTO | `api-use-mapped-types`, `api-dto-naming` |
 | List endpoint or search | `perf-optimize-database` (pagination), `api-dto-naming` (`PaginationQueryDto`, search body), `db-avoid-n-plus-one` |
 | File upload | `api-file-uploads` |
-| Entity or schema change | `db-entity-conventions`, `db-use-migrations`, `test-database-tier` |
+| Entity or schema change | `arch-resource-naming`, `db-entity-conventions`, `db-use-migrations`, `test-database-tier` |
 | Multi-step write | `db-use-transactions` |
 | Authentication or access control | `security-auth-jwt`, `security-hash-passwords`, `security-use-guards`, `api-custom-param-decorators`, `security-rate-limiting` |
 | Errors | `error-throw-http-exceptions`, `error-use-exception-filters`, `error-handle-async-errors` |
@@ -57,7 +57,8 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 ### 1. Architecture (CRITICAL) - `arch-`
 
-- `arch-feature-modules` - Feature modules, type folders, singular resource names in code
+- `arch-feature-modules` - Feature modules and type folders
+- `arch-resource-naming` - Singular resource names; every class, file and property in a resource module starts with the module name
 - `arch-import-boundaries` - Relative imports inside a module, `@/` alias across modules
 - `arch-module-sharing` - Proper module exports/imports, avoid duplicate providers
 - `arch-avoid-circular-deps` - Avoid circular module dependencies
@@ -86,7 +87,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 - `security-validate-all-input` - Global `ValidationPipe`, `class-validator` DTOs, nested objects
 - `security-auth-jwt` - Passport `JwtStrategy` building a complete `JwtUser`; the refresh exchange rechecks the user
-- `security-hash-passwords` - Argon2id (bcrypt only where already used) in one `PasswordHasher`, uniform login failures
+- `security-hash-passwords` - Argon2id (bcrypt only where already used) in one `UserPasswordHasher`, uniform login failures
 - `security-use-guards` - Global `JwtAuthGuard` + `RolesGuard`, `@Public()`, `@Roles()`
 - `security-sanitize-output` - Sanitize user HTML, never reflect unvalidated input
 - `security-rate-limiting` - Rate limiting with `@nestjs/throttler`

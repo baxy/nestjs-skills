@@ -11,7 +11,7 @@ Controllers are thin: they bind and validate input, delegate to the service, and
 
 ### Naming
 
-- The controller class and file are **singular**: `OrderController` in `order/controllers/order.controller.ts` (see `arch-feature-modules`). More controllers in a module are named for their resource: `OrderItemController`.
+- The controller class and file are **singular**: `OrderController` in `order/controllers/order.controller.ts` (see `arch-resource-naming`). More controllers in a module carry the module name too: `OrderItemController`.
 - The route path is **plural**, lowercase kebab-case: `@Controller('orders')`, `@Controller('orders/:id/items')`, `@Controller('payment-methods')`.
 
 ### URLs

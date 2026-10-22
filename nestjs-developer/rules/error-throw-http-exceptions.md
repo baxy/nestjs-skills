@@ -50,7 +50,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly userPasswordHasher: UserPasswordHasher,
   ) {}
 
   async findById(id: string): Promise<User> {

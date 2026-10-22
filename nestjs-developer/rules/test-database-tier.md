@@ -57,8 +57,8 @@ describe('users and orders constraints', () => {
     return rows[0].id;
   };
 
-  const insertOrder = (userId: string, total: number) =>
-    runner.query(`INSERT INTO orders (user_id, total, shipping_address) VALUES ($1, $2, '{}')`, [userId, total]);
+  const insertOrder = (userId: string, totalCents: number) =>
+    runner.query(`INSERT INTO orders (user_id, total_cents, shipping_address) VALUES ($1, $2, '{}')`, [userId, totalCents]);
 
   // Savepoint per probe: assert the rejection, then keep using the transaction
   const rejects = async (pattern: RegExp, run: () => Promise<unknown>): Promise<void> => {
@@ -86,10 +86,10 @@ describe('users and orders constraints', () => {
     await runner.release();
   });
 
-  describe('CHK_orders_total_non_negative', () => {
+  describe('CHK_orders_total_cents_non_negative', () => {
     it('rejects a negative total and accepts zero', async () => {
       const userId = await insertUser('jane@example.com');
-      await rejects(/CHK_orders_total_non_negative/, () => insertOrder(userId, -1));
+      await rejects(/CHK_orders_total_cents_non_negative/, () => insertOrder(userId, -1));
       await expect(insertOrder(userId, 0)).resolves.toBeDefined();
     });
   });

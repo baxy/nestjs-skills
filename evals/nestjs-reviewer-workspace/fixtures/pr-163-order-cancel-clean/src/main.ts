@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 import { configureApp } from './configure-app';
 
 process.on('uncaughtException', (error) => {
-  console.error('[orders-api-alert] uncaught exception:', error); // Intentional: must survive logger failure
+  console.error('[orders-api-alert] uncaught exception:', error);
   process.exit(1);
 });
 process.on('unhandledRejection', (reason) => {

@@ -36,7 +36,7 @@ Both are at version 1.1.0.
 │   └── rules/
 │       ├── _sections.md            # Section order and impact levels
 │       ├── _template.md            # Template for a new rule
-│       └── <prefix>-<name>.md      # 59 rules
+│       └── <prefix>-<name>.md      # 60 rules
 ├── nestjs-reviewer/
 │   ├── SKILL.md                    # Workflow, severity table, report format
 │   └── references/
@@ -100,7 +100,7 @@ Every Critical issue and Warning has a `file:line`, the snippet, a concrete fix 
 
 The main conventions, in short:
 
-- **Layout:** feature modules with type folders (`controllers/`, `services/`, `dtos/`, `entities/`); singular names in code, plural only in URLs and table names; relative imports inside a module, `@/` across modules.
+- **Layout:** feature modules with type folders (`controllers/`, `services/`, `dtos/`, `entities/`); singular names in code, plural only in URLs and table names; everything in a resource module starts with the module name (`OrderItem`, `OrderPricingService`); relative imports inside a module, `@/` across modules.
 - **API:** REST routes with `POST /:id/{verb}` actions; param, query and body bound to DTO classes; offset pagination returning `{ result, count, limit, offset }`; every response wrapped as `{ success, statusCode, data, meta }` by an interceptor; the same code runs on Express and Fastify.
 - **Errors:** services throw the built-in HTTP exceptions; 400 for invalid input or a broken domain rule, 409 for a clash with existing data; one global exception filter, which passes on an `errorCode` when a client needs one to branch on.
 - **Security:** global `JwtAuthGuard` and `RolesGuard` with `@Public()` and `@Roles()`; the caller arrives as `@AuthUser() authUser: JwtUser`; Argon2id passwords; `ValidationPipe` with `whitelist`, `forbidNonWhitelisted`, `forbidUnknownValues` and `transform`.
@@ -117,7 +117,7 @@ The reasons behind these choices, and which ones are still open, are in [`DECISI
 
 | Section | Prefix | Impact | Rules |
 |---|---|---|---|
-| Architecture | `arch-` | Critical | 9 |
+| Architecture | `arch-` | Critical | 10 |
 | Dependency Injection | `di-` | Critical | 6 |
 | Error Handling | `error-` | High | 3 |
 | Security | `security-` | High | 6 |
@@ -214,12 +214,14 @@ When an eval's fixture moves, update the absolute path in that eval's prompt in 
 | 2026-10-22 | developer | 5 | not run | 97% (38/39) | eval-2 used `@nestjs/cache-manager` and throttler-storage majors that predate NestJS 12 (version table clarified after). The eval-4 project was installed and run: tests pass, the build needed `strictPropertyInitialization: false` and type-only imports (both added to `project-setup.md` after) |
 | 2026-10-22 | developer | 6 | not run | 100% (8/8) | Only the new `eval-5-existing-nest11`. Installed on NestJS 11 and run: 23 e2e tests pass; one TS1272 (`ConfigType` imported as a value) fixed in the rules after |
 | 2026-10-22 | developer | 7 | 0/5 pass the new comments assertion (113 of 179 comments broke it) | 96% (52/54) | `style-code-comments` added. Comments 179 → 24, violations 113 → 2. eval-4 and eval-5 installed and run: both type-check, build and pass their tests (6 and 17) with no manual fixes |
+| 2026-10-22 | developer | 8 | 1/4 resource-module outputs passed naming before the rule (8 violations) | 97% (57/59) | `arch-resource-naming` added: 0 naming violations. The two failures are single comments, addressed in `style-code-comments` after the run (units in names, no "for now" reasons) |
 | 2026-10-19 | reviewer | 1 | 66% | 83% | 3 evals, 3 runs each |
 | 2026-10-19 | reviewer | 2 | 66% | 91% | |
 | 2026-10-19 | reviewer | 3 | 73% | 100% | Held-out `pr-171` added |
 | 2026-10-20 | reviewer | 4 | not run | 100% (68/68) | Regression check; the clean PR ran 3 times with no false positives |
 | 2026-10-22 | reviewer | 5 | not run | 100% (66/66) | NestJS 12 update; the clean PR ran 3 times with no false positives. Some unplanted findings rated Critical where Warning fits |
 | 2026-10-22 | reviewer | 6 | not run | 100% (66/66) | Fixture test UUIDs fixed; the clean PR ran 3 times with no false positives |
+| 2026-10-22 | reviewer | 7-8 | not run | 100% (66/66) | After both new rules; the clean fixture updated to follow them, then 3 runs with no naming or comment false positives |
 
 Evals score the code by reading it. Running a generated project, as done for developer iteration 4, catches what reading misses (test data the validators reject, package versions that don't exist), so do that for a setup change.
 

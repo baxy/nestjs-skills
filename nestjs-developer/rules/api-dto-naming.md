@@ -15,7 +15,7 @@ DTOs live in the module's `dtos/` folder (see `arch-feature-modules`). File name
 | Update body | `update-{resource}.dto.ts` | `UpdateOrderDto` |
 | Action body | `{verb}-{resource}.dto.ts` (`cancel-order`, `ship-order`) | `CancelOrderDto` |
 | Search body (`POST /{resources}/search`) | `search-{resources}.dto.ts` | `SearchOrdersDto` |
-| Internal route body | `internal-{verb}-{resource}.dto.ts` | `InternalCreateOrderDto` |
+| Internal route body | `{verb}-{resource}-internal.dto.ts` | `CreateOrderInternalDto` |
 | Route params | `{resource}-id.param.dto.ts`, named for the deepest resource (`order-item-id` for `/orders/:id/items/:itemId`) | `OrderIdParamDto`, `OrderItemIdParamDto` |
 | Endpoint query | `{verb}-{resources}.query.dto.ts`; list endpoints use `find-all-{resources}` | `FindAllOrdersQueryDto` |
 | Reusable query piece | `{concern}.query.dto.ts` (`pagination`, `sort`) | `PaginationQueryDto` |

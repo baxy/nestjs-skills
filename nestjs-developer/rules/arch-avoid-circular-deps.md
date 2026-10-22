@@ -73,15 +73,15 @@ export class UserService {
   }
 }
 
-// order/listeners/user-created.listener.ts - OrderModule reacts without importing UserModule
+// order/listeners/order-user-events.listener.ts - OrderModule reacts without importing UserModule
 @Injectable()
-export class UserCreatedListener {
-  private readonly logger = new Logger(UserCreatedListener.name);
+export class OrderUserEventsListener {
+  private readonly logger = new Logger(OrderUserEventsListener.name);
 
   constructor(private readonly orderService: OrderService) {}
 
   @OnEvent('user.created', { async: true })
-  async handle(event: UserCreatedEvent): Promise<void> {
+  async onUserCreated(event: UserCreatedEvent): Promise<void> {
     try {
       await this.orderService.createWelcomeCart(event.userId);
     } catch (error) {

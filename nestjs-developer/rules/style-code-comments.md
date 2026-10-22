@@ -15,6 +15,7 @@ The default is **no comment**. Names carry the meaning: a variable, function, co
 - A comment that explains a value becomes a named constant: `30 * 60 * 1000 // 30 minutes` becomes `const PAYMENT_WINDOW_MS = 30 * 60 * 1000`.
 - A comment that explains a condition becomes a named boolean or method: `if (order.status === 'paid' && !order.shippedAt)` becomes `if (order.awaitsShipment())`.
 - A comment that lists allowed values becomes a type or an enum.
+- A comment that gives a unit becomes part of the name: `price: number; // in cents` becomes `priceCents: number`, `timeout // ms` becomes `timeoutMs`.
 
 **Write a comment only when the code cannot carry the information, and then say why, not what:**
 
@@ -30,8 +31,8 @@ Keep each comment short, on its own line above the code it explains.
 
 - What the code does, line by line, or what a name or type already says (`// Find the user`, `@param id the id`).
 - A convention these rules already state (`// Hardcoded, never from config`, `// Outermost first`): the rule lives in the rules, not at each place that follows it.
-- Details of other files, which change without this file changing (`// Shared by main.ts and test/helpers/create-test-app.ts`).
-- Statements tied to the moment of writing (`// For the endpoints that come next`, `// New`, `// Temporary`) without a ticket.
+- Details of other files, which change without this file changing (`// Shared by main.ts and test/helpers/create-test-app.ts`, `// Called by SessionService for POST /sessions`). A reason may say that other modules depend on this code (`// Not scoped to a caller: other modules look users up by id`); it does not name them or describe what they do.
+- Statements tied to the moment of writing (`// For the endpoints that come next`, `// New`, `// Temporary`) without a ticket, including reasons that hold only until a later change (`// There are no write routes yet, so the specs insert rows directly`). Put those in the PR description or a `TODO(ticket)`.
 - History: who changed what, when, or why the previous version was wrong (`// Fixed the race`, `// Added for PR #212`). That belongs in the commit message.
 - Commented-out code, section banners (`// ===== Helpers =====`), or a comment on every member of a class.
 

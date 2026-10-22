@@ -196,14 +196,14 @@ Exporting everything from a module breaks encapsulation.
 ```typescript
 // ❌ Anti-pattern: Exporting internal implementation details
 @Module({
-  providers: [UserService, PasswordHasher, UserMapper],
-  exports: [UserService, PasswordHasher, UserMapper],
+  providers: [UserService, UserPasswordHasher, UserMapper],
+  exports: [UserService, UserPasswordHasher, UserMapper],
 })
 export class UserModule {}
 
 // ✅ Fix: Export only the public API
 @Module({
-  providers: [UserService, PasswordHasher, UserMapper],
+  providers: [UserService, UserPasswordHasher, UserMapper],
   exports: [UserService],
 })
 export class UserModule {}

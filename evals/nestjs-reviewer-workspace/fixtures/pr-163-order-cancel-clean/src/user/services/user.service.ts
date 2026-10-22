@@ -3,17 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { User } from '../entities/user.entity';
-import { PasswordHasher } from './password-hasher';
+import { UserPasswordHasher } from './user-password-hasher';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly userPasswordHasher: UserPasswordHasher,
   ) {}
 
-  // Called by other modules by id; no caller scopes this lookup
+  // Not scoped to a caller: other modules look users up by id
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -32,6 +32,6 @@ export class UserService {
 
   private async _toEntity(dto: CreateUserDto): Promise<User> {
     const { password, ...fields } = dto;
-    return this.userRepository.create({ ...fields, passwordHash: await this.passwordHasher.hash(password) });
+    return this.userRepository.create({ ...fields, passwordHash: await this.userPasswordHasher.hash(password) });
   }
 }

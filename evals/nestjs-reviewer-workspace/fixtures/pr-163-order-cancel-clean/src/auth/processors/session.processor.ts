@@ -14,7 +14,7 @@ export class SessionProcessor extends WorkerHost {
   async process(job: Job): Promise<void> {
     switch (job.name) {
       case 'delete-expired': {
-        const deleted = await this.sessionService.deleteExpired(); // Throws to fail the job and retry
+        const deleted = await this.sessionService.deleteExpired();
         this.logger.log(`Deleted ${deleted} expired refresh tokens`);
         return;
       }

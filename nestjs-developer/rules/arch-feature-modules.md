@@ -18,18 +18,7 @@ Inside a module, **every file lives in a folder named for its type**. Only `{mod
 - Top-level files in `src/`: `main.ts`, `app.module.ts` and `configure-app.ts` (global setup shared with tests, see `test-use-testing-module`).
 - `src/shared/` is a folder of reusable resources, **not a Nest module**: there is no `shared.module.ts`. Its files (utils, DTOs, types, decorators, guards) are imported directly where they are used. Something that needs dependency injection and is used by several modules (a mail sender, a payment client) gets its own module named for what it does (`mail/`, `payment/`), never a catch-all `SharedModule`.
 
-**A resource has one singular name everywhere in code.** The module folder, the module, controller, service and entity classes, their files and the injected properties all use the singular resource name. It is plural in exactly two places: the URL (`@Controller('orders')`, see `api-controller-conventions`) and the database table (`@Entity('orders')`, see `db-entity-conventions`).
-
-| Element | Name |
-|---|---|
-| Module folder | `src/order/` |
-| Module | `OrderModule` in `order.module.ts` |
-| Controller | `OrderController` in `controllers/order.controller.ts`; more controllers are named for their resource: `OrderItemController` |
-| Service | `OrderService` in `services/order.service.ts`; injected as `orderService` |
-| Entity | `Order` in `entities/order.entity.ts`; table `orders` |
-| Test folders | `test/e2e/order/order.spec.ts` (mirror `src/`) |
-
-Uncountable nouns keep their form (`analytics/`, `metadata/`), and a module built around a capability rather than a resource is named for the capability (`mail/`, `auth/`, `health/`).
+**Names** of the module and of everything in it (singular resource names, the module-name prefix, capability modules) are in `arch-resource-naming`.
 
 **Incorrect (technical layers at the app root, or loose files at the module root):**
 

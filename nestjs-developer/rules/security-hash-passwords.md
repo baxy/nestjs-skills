@@ -9,7 +9,7 @@ tags: security, passwords, hashing, argon2, bcrypt, authentication
 
 A password is stored only as a slow, salted hash. New code uses Argon2id from the `argon2` package; a project that already stores bcrypt hashes may keep bcrypt (below). Never store the plain text, never use a fast hash (SHA-256, MD5), and never encrypt a password: one leaked key would reveal every password. High-entropy tokens are a different case and are hashed with SHA-256 (see `security-auth-jwt`).
 
-- **One provider knows the algorithm.** `PasswordHasher` in the user module hashes, verifies and decides when to rehash. It is not exported (see `arch-module-sharing`): other modules go through `UserService`.
+- **One provider knows the algorithm.** `UserPasswordHasher` in the user module hashes, verifies and decides when to rehash. It is not exported (see `arch-module-sharing`): other modules go through `UserService`.
 - **Hash before the entity exists.** The service turns `CreateUserDto.password` into `passwordHash` before calling `repository.create()`. No column is named `password`, and `passwordHash` carries `@Exclude()` + `@ApiHideProperty()` (see `api-use-dto-serialization`).
 - **Parameters are explicit**: `type: argon2id`, `memoryCost: 19_456` (19 MiB), `timeCost: 2`, `parallelism: 1`, the OWASP minimum. Raise them, never lower them. When they change, `needsRehash()` upgrades each stored hash at the user's next successful login.
 - **bcrypt is accepted where it is already in use**, never chosen for new code. Use the native `bcrypt` package (not `bcryptjs`, which hashes on the main thread) with cost 12 or more, and cap the password at 72 **bytes** with `@IsByteLength(1, 72)`. bcrypt silently ignores everything after byte 72, so two passwords that share those bytes both log in, and multi-byte UTF-8 reaches 72 bytes well before 72 characters.
@@ -40,7 +40,7 @@ if (user.passwordHash !== sha256(password)) {                         // Fast ha
 **Correct (one hashing provider, uniform login failure):**
 
 ```typescript
-// user/services/password-hasher.ts - the only code that knows the algorithm; not exported from UserModule
+// user/services/user-password-hasher.ts - the only code that knows the algorithm; not exported from UserModule
 import * as argon2 from 'argon2';
 import * as bcrypt from 'bcrypt'; // Only while bcrypt hashes from before the switch remain
 
@@ -48,7 +48,7 @@ const HASH_OPTIONS = { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, p
 const BCRYPT_PREFIX = /^\$2[aby]\$/;
 
 @Injectable()
-export class PasswordHasher implements OnModuleInit {
+export class UserPasswordHasher implements OnModuleInit {
   private dummyHash = '';
 
   async onModuleInit(): Promise<void> {
@@ -79,7 +79,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly userPasswordHasher: UserPasswordHasher,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -90,19 +90,19 @@ export class UserService {
   // Called by SessionService (auth module) for POST /sessions; email is normalized by CreateSessionDto
   async verifyCredentials(email: string, password: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { email } });
-    const valid = await this.passwordHasher.verify(user?.passwordHash ?? null, password);
+    const valid = await this.userPasswordHasher.verify(user?.passwordHash ?? null, password);
     if (!user || !valid) {
       throw new UnauthorizedException('Invalid email or password'); // Same answer for both failures
     }
-    if (this.passwordHasher.needsRehash(user.passwordHash)) {
-      await this.userRepository.update(user.id, { passwordHash: await this.passwordHasher.hash(password) });
+    if (this.userPasswordHasher.needsRehash(user.passwordHash)) {
+      await this.userRepository.update(user.id, { passwordHash: await this.userPasswordHasher.hash(password) });
     }
     return user;
   }
 
   private async _toEntity(dto: CreateUserDto): Promise<User> {
     const { password, ...fields } = dto;
-    return this.userRepository.create({ ...fields, passwordHash: await this.passwordHasher.hash(password) });
+    return this.userRepository.create({ ...fields, passwordHash: await this.userPasswordHasher.hash(password) });
   }
 }
 
@@ -110,8 +110,8 @@ export class UserService {
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
-  providers: [UserService, PasswordHasher],
-  exports: [UserService], // PasswordHasher stays internal
+  providers: [UserService, UserPasswordHasher],
+  exports: [UserService], // UserPasswordHasher stays internal
 })
 export class UserModule {}
 ```
@@ -119,7 +119,7 @@ export class UserModule {}
 **A project that stays on bcrypt** keeps the same class and the same `UserService`; only the internals and the DTO limit change:
 
 ```typescript
-// user/services/password-hasher.ts - bcrypt variant, for a project that already stores bcrypt hashes
+// user/services/user-password-hasher.ts - bcrypt variant, for a project that already stores bcrypt hashes
 const BCRYPT_COST = 12;
 
 hash(password: string): Promise<string> {

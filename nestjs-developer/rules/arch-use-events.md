@@ -77,15 +77,15 @@ export class OrderService {
   }
 }
 
-// recommendation/listeners/order-created.listener.ts - each consumer listens in its own module
+// recommendation/listeners/recommendation-order-events.listener.ts - each consumer listens in its own module (see arch-resource-naming)
 @Injectable()
-export class OrderCreatedListener {
-  private readonly logger = new Logger(OrderCreatedListener.name);
+export class RecommendationOrderEventsListener {
+  private readonly logger = new Logger(RecommendationOrderEventsListener.name);
 
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @OnEvent('order.created', { async: true })
-  async handle(event: OrderCreatedEvent): Promise<void> {
+  async onOrderCreated(event: OrderCreatedEvent): Promise<void> {
     try {
       await this.recommendationService.recordPurchase(event.orderId);
     } catch (error) {

@@ -31,7 +31,7 @@ export class Order {
   status: OrderStatus;
 
   @Column({ type: 'integer' })
-  total: number; // Minor units (cents)
+  total: number;
 
   @Column({ type: 'jsonb' })
   shippingAddress: Address;

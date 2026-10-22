@@ -28,9 +28,9 @@ export class UserService {
 }
 
 @Injectable()
-export class OrderCreatedListener {
+export class RecommendationOrderEventsListener {
   @OnEvent('order.created')
-  handle(event: OrderCreatedEvent): void {
+  onOrderCreated(event: OrderCreatedEvent): void {
     this._recordPurchase(event); // Promise dropped; its failure is unhandled
   }
 }
@@ -62,13 +62,13 @@ export class UserService {
 }
 
 @Injectable()
-export class OrderCreatedListener {
-  private readonly logger = new Logger(OrderCreatedListener.name);
+export class RecommendationOrderEventsListener {
+  private readonly logger = new Logger(RecommendationOrderEventsListener.name);
 
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @OnEvent('order.created', { async: true })
-  async handle(event: OrderCreatedEvent): Promise<void> {
+  async onOrderCreated(event: OrderCreatedEvent): Promise<void> {
     try {
       await this.recommendationService.recordPurchase(event.orderId);
     } catch (error) {
