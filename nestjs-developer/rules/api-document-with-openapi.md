@@ -9,7 +9,7 @@ tags: api, openapi, swagger, documentation
 
 Generate API documentation from the code with `@nestjs/swagger` and its CLI plugin (which infers `type`, `required`, `format` and `enum` from `class-validator` decorators). On top of that:
 
-- **Every DTO field** (create, update, query, param) has `@ApiProperty` (required) or `@ApiPropertyOptional` (declared with `?` or `@IsOptional()`), each with a `description` and an `example`. A field typed as a nested DTO (`type: AddressDto`, `type: [OrderItemDto]`) has no `example` of its own: Swagger builds it from the nested DTO's field examples. The CLI plugin runs only in the nest CLI build, not in Jest, so explicit decorators are the only way the documentation is the same in both.
+- **Every DTO field** (create, update, query, param) has `@ApiProperty` (required) or `@ApiPropertyOptional` (declared with `?` or `@IsOptional()`), each with a `description` and an `example`. A field typed as a nested DTO (`type: AddressDto`, `type: [OrderItemDto]`) has no `example` of its own: Swagger builds it from the nested DTO's field examples. The CLI plugin runs only in the nest CLI build, not in the test runner, so explicit decorators are the only way the documentation is the same in both.
 - **Never duplicate validator information** in `@ApiProperty`: no `type`, `required`, `format` or `enum` when a validator already says it.
 - **Every controller** has exactly one `@ApiTags(...)` named after the resource, plus its security decorator (for example `@ApiBearerAuth('bearer')`). Do not document dev-only auth schemes.
 - **Every endpoint** has `@ApiOperation` with both `summary` and `description`.

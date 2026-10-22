@@ -55,7 +55,7 @@ export class OrderService {
     // Single query with JOIN
     return this.orderRepository.find({
       where: { userId },
-      relations: ['items', 'items.product'],
+      relations: { items: { product: true } },
     });
   }
 }
@@ -89,7 +89,7 @@ export class UserService {
 async getOrderSummaries(userId: string): Promise<OrderSummary[]> {
   return this.orderRepository.find({
     where: { userId },
-    relations: ['items'],
+    relations: { items: true },
     select: {
       id: true,
       total: true,

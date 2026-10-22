@@ -2,7 +2,7 @@
 title: Mock External Services at the Module Boundary
 impact: HIGH
 impactDescription: Fast, deterministic stack-free tiers that still cover provider failures
-tags: testing, mocking, external-services, jest
+tags: testing, mocking, external-services, vitest, jest
 ---
 
 ## Mock External Services at the Module Boundary
@@ -12,7 +12,7 @@ The unit and e2e tiers never call anything outside the process: third-party APIs
 - Drive the code through its route like any e2e test (see `test-use-testing-module`); the external client is the mock, not the service that calls it.
 - Cover the provider's failure modes, not only success: timeout, rate limiting (429), server error, malformed body. Assert what the API returns for each.
 - Mock data has the provider's real shape. A mock that returns `{}` passes tests the real response would fail.
-- Freeze time with `jest.useFakeTimers()` for expiry and scheduling logic; restore real timers afterwards.
+- Freeze time with fake timers (`vi.useFakeTimers()` in Vitest, `jest.useFakeTimers()` in Jest) for expiry and scheduling logic; restore real timers afterwards.
 
 **Incorrect (real calls, real database, happy path only):**
 
@@ -103,4 +103,4 @@ describe('isRefreshTokenExpired', () => {
 });
 ```
 
-Reference: [Jest Mock Functions](https://jestjs.io/docs/mock-functions) · [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)
+Reference: [Vitest Mocking](https://vitest.dev/guide/mocking) · [Jest Mock Functions](https://jestjs.io/docs/mock-functions) · [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)

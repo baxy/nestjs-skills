@@ -11,8 +11,8 @@ import { Role } from '@/shared/types/role';
 import { createTestApp } from '../../helpers/create-test-app';
 import { testAuthGuard } from '../../helpers/test-auth.guard';
 
-const USER_ID = '00000000-0000-0000-0000-000000000001';
-const ORDER_ID = '00000000-0000-0000-0000-000000000002';
+const USER_ID = '00000000-0000-4000-8000-000000000001';
+const ORDER_ID = '00000000-0000-4000-8000-000000000002';
 const AUTH_USER: JwtUser = { id: USER_ID, email: 'jane@example.com', roles: [Role.User] };
 
 describe('Orders', () => {

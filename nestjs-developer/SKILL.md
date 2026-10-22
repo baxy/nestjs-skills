@@ -2,7 +2,7 @@
 name: nestjs-developer
 description: NestJS coding conventions and best practices covering modules and folder layout, naming, dependency injection, REST controllers, DTOs and validation, TypeORM entities and migrations on PostgreSQL, Swagger/OpenAPI, error handling, security, testing tiers, logging and code style. Use when writing, generating or refactoring NestJS code (modules, controllers, services, DTOs, guards, interceptors, entities, migrations, tests, main.ts), or when working in a project that depends on @nestjs packages. For reviewing existing code or pull requests, use nestjs-reviewer.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # NestJS Developer
@@ -11,16 +11,23 @@ Conventions for building NestJS applications. Each rule lives in `rules/<rule-id
 
 ## Assumed stack
 
-The rules are written for NestJS on Express or Fastify, TypeORM on PostgreSQL, `class-validator`/`class-transformer`, `@nestjs/swagger`, Jest with `supertest`, and `nestjs-pino`. When the project uses a different library for one of these (Prisma, Mongoose, Vitest...), keep the project's library and apply the intent of the rule.
+The rules are written for NestJS 12 on Express or Fastify, TypeORM on PostgreSQL, `class-validator`/`class-transformer`, `@nestjs/swagger`, Vitest or Jest with `supertest`, and `nestjs-pino`. When the project uses a different library for one of these (Prisma, Mongoose, Zod...), keep the project's library and apply the intent of the rule.
+
+The examples are CommonJS-style imports without file extensions and use Jest's mock API (`jest.fn()`); `vi.fn()` and the rest of Vitest's API map one-to-one. `references/` holds what depends on the project's setup:
+
+- `references/project-setup.md`: how to read an existing project's setup, how to start a new one, and what changes in an ESM project (`.js` import extensions, `Relation<>` on entities, the TypeORM CLI).
+- `references/test-runner-vitest.md` and `references/test-runner-jest.md`: tier configs, scripts and the Jest-to-Vitest mapping.
 
 ## How to use
 
-1. Find the task in the table below and **read every rule file listed for it before writing code**. The one-line summaries in the index are reminders, not the rule.
-2. The `style-` rules apply to every file, comment, message and doc you write.
-3. Each example focuses on one rule and may leave out unrelated decorators (Swagger, guards) for brevity. Apply all relevant rules together.
+1. Check the project's `package.json` first: `"type": "module"` means ESM, and the test runner is whichever of `vitest` or `jest` it lists. Keep both as they are; for an ESM project, read `references/project-setup.md` before writing code. When no `package.json` is available, follow what the existing files show (`.js` import extensions, `vi.` or `jest.`); with no files at all it is a new project (ESM with Vitest). State the assumption in your answer.
+2. Find the task in the table below and **read every rule file listed for it before writing code**. The one-line summaries in the index are reminders, not the rule.
+3. The `style-` rules apply to every file, comment, message and doc you write.
+4. Each example focuses on one rule and may leave out unrelated decorators (Swagger, guards) for brevity. Apply all relevant rules together.
 
 | Task | Rules to read |
 |---|---|
+| New project | `references/project-setup.md` (`nest new`, ESM with Vitest), `references/test-runner-vitest.md`, `test-organize-by-tier`, `test-use-testing-module` (`configureApp()`), `devops-use-config-module`, `arch-import-boundaries` |
 | New feature module | `arch-feature-modules`, `arch-import-boundaries`, `arch-module-sharing`, `arch-avoid-circular-deps`, `arch-service-conventions`, `arch-data-access-in-services` |
 | New or changed service or provider | `arch-service-conventions`, `arch-single-responsibility`, `arch-data-access-in-services`, `di-prefer-constructor-injection`, `di-scope-awareness`, `error-throw-http-exceptions` |
 | Swappable implementation (interface, token, test double) | `di-use-interfaces-tokens`, `di-interface-segregation`, `di-liskov-substitution`, `di-avoid-service-locator` |
@@ -36,7 +43,7 @@ The rules are written for NestJS on Express or Fastify, TypeORM on PostgreSQL, `
 | Rich text input or HTML output | `security-sanitize-output` |
 | Breaking API change | `api-versioning`, `api-use-dto-serialization` |
 | Caching | `perf-use-caching` |
-| Tests | `test-organize-by-tier`, `test-use-testing-module`, `test-guards-and-interceptors`, `test-mock-external-services`; `test-database-tier` and `test-integration-suites` for those tiers |
+| Tests | `test-organize-by-tier`, `test-use-testing-module`, `test-guards-and-interceptors`, `test-mock-external-services`; `test-database-tier` and `test-integration-suites` for those tiers; the runner's file in `references/` for config and scripts |
 | Events, queues, background work | `arch-use-events`, `micro-use-queues`, `micro-use-patterns`, `error-handle-async-errors` |
 | `main.ts` and bootstrap | `api-platform-agnostic`, `devops-use-config-module`, `devops-use-logging`, `devops-graceful-shutdown`, `test-use-testing-module` (shared `configureApp()`) |
 | Lifecycle hooks, startup or shutdown work | `perf-async-hooks`, `devops-graceful-shutdown`, `perf-lazy-loading` |

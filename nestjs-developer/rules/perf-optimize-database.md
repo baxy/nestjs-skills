@@ -24,7 +24,7 @@ export class UserService {
   async getUserSummary(id: string): Promise<UserSummary> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['posts', 'posts.comments', 'posts.comments.author', 'followers'],
+      relations: { posts: { comments: { author: true } }, followers: true },
     });
     // Over-fetches massive relation tree
     return { name: user.name, postCount: user.posts.length };
@@ -71,7 +71,7 @@ export class UserService {
   async getFullProfile(id: string): Promise<User> {
     return this.userRepository.findOne({
       where: { id },
-      relations: ['posts'], // Only immediate relation
+      relations: { posts: true }, // Only immediate relation
       select: {
         id: true,
         name: true,

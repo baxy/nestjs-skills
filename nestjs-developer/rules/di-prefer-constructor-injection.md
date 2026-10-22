@@ -12,7 +12,7 @@ Every dependency of a provider, controller, guard or interceptor arrives through
 - **`new` for an injectable class** (`new MailService()`). The instance is outside the container: it is not shared, its own dependencies are not injected, its lifecycle hooks never run, and tests cannot replace it. Three uses of `new` are fine: `new Logger(Class.name)` (the standard Nest pattern; it delegates to the app logger), the global pipes, filter and interceptors that `configureApp()` registers with `app.useGlobal*()` (see `test-use-testing-module`), and a per-route enhancer that takes constructor arguments, such as `@UseInterceptors(new TimeoutInterceptor(10_000))` (see `api-use-interceptors`).
 - **Property injection** (`@Inject()` on a field). The dependency is hidden from the constructor signature and unset if the class is constructed any other way.
 
-An optional dependency is still a constructor parameter, marked `@Optional()`.
+An optional dependency is still a constructor parameter, marked `@Optional()`. Since NestJS 12 a subclass does not inherit the marker: give the subclass its own constructor that declares `@Optional()` again and passes the value to `super()`, or Nest throws `UnknownDependenciesException`.
 
 **Incorrect (manual instantiation and property injection):**
 

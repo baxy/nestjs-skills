@@ -3,7 +3,7 @@ name: nestjs-reviewer
 description: Reviews NestJS code changes, branches and pull requests against the nestjs-developer conventions (architecture, dependency injection, REST controllers, DTOs, security, TypeORM, testing, code style). Use when asked to review NestJS code or a NestJS pull request, to check a controller, service, module, guard, interceptor, DTO, entity, migration or test in a NestJS project, or to validate a NestJS feature after implementing it.
 allowed-tools: Read, Grep, Glob, Bash
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   requires: nestjs-developer
 ---
 
@@ -13,7 +13,8 @@ Reviews NestJS code against the rules of the `nestjs-developer` skill. Every Cri
 
 ## Sources
 
-- `../nestjs-developer/rules/<rule-id>.md` (relative to this skill folder) - the rule, with incorrect and correct examples. Read the rule before reporting a finding against it. If the folder is missing, review with the two references below only and say so in the Summary.
+- `../nestjs-developer/rules/<rule-id>.md` (relative to this skill folder) - the rule, with incorrect and correct examples. Read the rule before reporting a finding against it. If the `nestjs-developer` folder is missing, review with `references/checklist.md` and `references/anti-patterns.md` only and say so in the Summary.
+- `../nestjs-developer/references/` - setup that depends on the project: `project-setup.md` (ESM projects, NestJS 12 and TypeORM 1.x changes) and the Vitest and Jest test-runner files. Checklist items tagged `references/...` point here. Read `package.json` first: the module system and the test runner it declares decide which of these apply.
 - `references/checklist.md` - what to check per area, each item tagged with its rule ID.
 - `references/anti-patterns.md` - common problems, with the fix.
 

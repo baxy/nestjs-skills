@@ -13,7 +13,8 @@
         "CancelOrderDto in dtos/cancel-order.dto.ts with @MaxLength(500) and a described @ApiPropertyOptional",
         "E2E spec at test/e2e/order/order.spec.ts using shared helpers from test/helpers/",
         "No per-route @UseGuards",
-        "No hand-written structural migration (db-use-migrations)"
+        "No hand-written structural migration (db-use-migrations)",
+        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)"
       ]
     },
     {
@@ -28,7 +29,8 @@
         "Refresh token stored only as a hash",
         "Indexes and constraints named explicitly (IDX_/UQ_)",
         "validate-env requires AUTH_JWT_SECRET, ISSUER and AUDIENCE",
-        "SnakeNamingStrategy on the app and the migration DataSource"
+        "SnakeNamingStrategy on the app and the migration DataSource",
+        "package.json uses package majors that exist and support NestJS 12 (e.g. @nestjs/config ^12, @nestjs/throttler ^6, nestjs-pino ^5)"
       ]
     },
     {
@@ -44,7 +46,27 @@
         "passwordHash has @Exclude() + @ApiHideProperty()",
         "Login is POST /sessions; specs in test/e2e/user, test/e2e/auth, test/db/user; helpers from test/helpers",
         "PasswordHasher not exported from UserModule",
-        "No hand-written structural migration (db-use-migrations)"
+        "No hand-written structural migration (db-use-migrations)",
+        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "eval-4-new-project-esm",
+      "prompt": "Start a new NestJS service for our product catalog, set up the way the current NestJS CLI scaffolds a project today. It needs Postgres via TypeORM, the test setup for all our test tiers, and a first Product module: a Product belongs to a Category (both entities), with GET /products/:id returning one product. Include the e2e test for that route. There is no network access here, so write the files yourself instead of running nest new or installing packages.",
+      "expectations": [
+        "ESM project: package.json has \"type\": \"module\" and Vitest, not Jest",
+        "Relative and @/ imports end in .js",
+        "tsconfig.json declares the @/ alias in paths without baseUrl",
+        "vitest.config.ts declares one project per tier (at least unit and e2e) with extends: true; no vitest.config.e2e.ts",
+        "Scripts: test runs unit + e2e with --project; test:db and test:integration use --no-file-parallelism; test:coverage is one run over unit + e2e",
+        "E2E spec at test/e2e/product/product.spec.ts uses vi.fn (not jest.fn) and a default supertest import",
+        "Product.category relation typed Relation<Category>",
+        "SnakeNamingStrategy on the app DataSource and on the migration DataSource; synchronize hardcoded false",
+        "configureApp() shared by main.ts and createTestApp(); real ProductService with a mocked repository in the e2e spec",
+        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)",
+        "package.json uses package majors that exist and support NestJS 12 (e.g. @nestjs/config ^12, @nestjs/throttler ^6, nestjs-pino ^5)",
+        "Type-checks under TypeScript 6: tsconfig.json keeps strictPropertyInitialization false, and Relation is a type-only import"
       ]
     }
   ]

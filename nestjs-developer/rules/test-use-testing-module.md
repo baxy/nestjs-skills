@@ -14,9 +14,9 @@ In the e2e tier (see `test-organize-by-tier`), build the **real** controller and
 - **Same global setup as production.** Global pipes, the exception filter and global interceptors are registered in `configureApp()` (`src/configure-app.ts`), which both `main.ts` and `createTestApp()` call. Do not register them as `APP_PIPE`/`APP_FILTER`/`APP_INTERCEPTOR` providers in `AppModule`: an e2e testing module does not import `AppModule`, so the tests would run a different app. Guards stay `APP_GUARD` providers; tests replace authentication with a test guard. Route-shaping setup (`app.setGlobalPrefix()`, `app.enableVersioning()`, see `api-versioning`) also goes in `configureApp()`, or e2e tests call different paths than clients.
 - **One helper knows the HTTP adapter.** `createTestApp()` creates the app for Express or Fastify; specs never touch adapter APIs, so they run unchanged on either (see `api-platform-agnostic`).
 - Provide the caller with a test guard registered as `APP_GUARD` that sets a `JwtUser`; add `RolesGuard` after it when the suite covers role rules.
-- Repositories are plain objects of `jest.fn()`s. A service that uses a query builder gets a chainable mock (every builder method returns the builder) so the test can assert the conditions it received.
+- Repositories are plain objects of mock functions (`vi.fn()` in Vitest, `jest.fn()` in Jest). A service that uses a query builder gets a chainable mock (every builder method returns the builder) so the test can assert the conditions it received.
 - A service method with **no route** gets a direct `describe('ServiceName.method')` block only when it has a non-HTTP consumer (another module calls it); name the consumer in a comment. A method with no caller at all gets no test.
-- Reset mocks between tests (`beforeEach(() => jest.clearAllMocks())`); put shared constants (UUIDs, mock objects) at the top of the file.
+- Reset mocks between tests (`beforeEach(() => vi.clearAllMocks())`, or `jest.clearAllMocks()`); put shared constants (UUIDs, mock objects) at the top of the file. Test UUIDs must pass `@IsUUID()`, which checks the version digit: use `00000000-0000-4000-8000-000000000001` and so on. `00000000-0000-0000-0000-000000000001` is rejected with a 400, so every route test using it fails before reaching the service.
 
 **Incorrect (mocking the service under test, or bypassing the HTTP layer):**
 
@@ -85,8 +85,8 @@ export const testAuthGuard = (resolveUser: (request: AppRequest) => JwtUser | un
 // test/e2e/order/order.spec.ts
 import request from 'supertest';
 
-const USER_ID = '00000000-0000-0000-0000-000000000001';
-const ORDER_ID = '00000000-0000-0000-0000-000000000002';
+const USER_ID = '00000000-0000-4000-8000-000000000001';
+const ORDER_ID = '00000000-0000-4000-8000-000000000002';
 const AUTH_USER: JwtUser = { id: USER_ID, email: 'jane@example.com', roles: [Role.User] };
 
 describe('Orders', () => {

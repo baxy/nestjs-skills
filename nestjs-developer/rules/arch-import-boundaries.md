@@ -40,11 +40,10 @@ import { OrderService } from './services/order.service';
 ```
 
 ```jsonc
-// tsconfig.json
-{ "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] } } }
-
-// test/jest-*.json - tests reach their subject through the same alias
-{ "moduleNameMapper": { "^@/(.*)$": "<rootDir>/src/$1" } }
+// tsconfig.json - no baseUrl: TypeScript 6 rejects it, and paths resolve from the tsconfig
+{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }
 ```
+
+Tests reach their subject through the same alias; the runner reads it as shown in `references/test-runner-vitest.md` or `references/test-runner-jest.md`. In an ESM project every import, the alias included, ends in `.js` (`@/payment/services/payment.service.js`); see `references/project-setup.md`.
 
 Reference: [TypeScript paths](https://www.typescriptlang.org/tsconfig/#paths)

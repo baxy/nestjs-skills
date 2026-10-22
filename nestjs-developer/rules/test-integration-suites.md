@@ -15,7 +15,7 @@ The integration tier (`test/integration/`, see `test-organize-by-tier`) calls th
 - **Assert the status, then read the body.** Use a client that returns `{ status, headers, body }` without throwing on HTTP errors, and narrow success vs error before reading fields.
 - **Keep authorization out of functional tests.** Functional specs run as one default caller with enough permissions to arrange state. Authorization gets its own suite that varies roles, and data isolation between users gets its own suite; both are order-independent like every other spec. A functional failure then reads as "the feature broke", not "a policy changed".
 - Structure: the top-level `describe` is the resource (`Orders`); inside it, `VERB /path` blocks in CRUD or lifecycle order, positives beside negatives; a specific scenario of one endpoint gets a parenthetical suffix (`POST /orders/:id/cancel (already shipped)`).
-- Run with `--runInBand`: the suites share database state.
+- Run one file at a time (`--no-file-parallelism` in Vitest, `--runInBand` in Jest): the suites share database state.
 
 **Incorrect (order-dependent, position-based, policy mixed into features):**
 
@@ -89,4 +89,4 @@ describe('Orders isolation', () => {
 });
 ```
 
-Reference: [Jest runInBand](https://jestjs.io/docs/cli#--runinband)
+Reference: [Vitest CLI](https://vitest.dev/guide/cli) · [Jest CLI](https://jestjs.io/docs/cli#--runinband)

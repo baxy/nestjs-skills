@@ -19,7 +19,7 @@ How each case is written:
 
 - Run every case inside a transaction that is **rolled back** in `afterEach`, so the suite leaves no rows and test order does not matter.
 - Wrap every **expected rejection in a savepoint**. Postgres aborts the whole transaction after a failed statement, so without one, everything after the first expected failure errors with "current transaction is aborted".
-- Run with `--runInBand`. The tier needs a migrated database, so it is not part of the `test` script; run it before a PR that touches entities, migrations or services, and treat new specs here with the same review attention as production code.
+- Run one file at a time (`--no-file-parallelism` in Vitest, `--runInBand` in Jest). The tier needs a migrated database, so it is not part of the `test` script; run it before a PR that touches entities, migrations or services, and treat new specs here with the same review attention as production code.
 
 **Incorrect (constraints asserted against mocks, or leaky real-database tests):**
 

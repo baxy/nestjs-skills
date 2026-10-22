@@ -2,12 +2,14 @@
 title: Organize Tests by Tier
 impact: HIGH
 impactDescription: Every test has one obvious home, and CI runs exactly what it can run
-tags: testing, organization, jest, coverage, ci
+tags: testing, organization, vitest, jest, coverage, ci
 ---
 
 ## Organize Tests by Tier
 
-A test's tier is defined by **what it needs in order to run**, because that alone decides whether CI can run it. Each tier is one directory under `test/` with its own jest config that selects it by path. **No test lives in `src/`.**
+A test's tier is defined by **what it needs in order to run**, because that alone decides whether CI can run it. Each tier is one directory under `test/`, and the test runner's config selects it by path. **No test lives in `src/`.**
+
+The tiers are the same with either runner. The config files and scripts that implement them are in `references/test-runner-vitest.md` (ESM projects, the NestJS 12 default) and `references/test-runner-jest.md` (CommonJS projects); use the one for the runner in the project's `package.json`.
 
 | Tier | Needs | Script | Directory |
 |---|---|---|---|
@@ -28,7 +30,7 @@ A test's tier is defined by **what it needs in order to run**, because that alon
 - Every tier mirrors `src/`: one folder per module, whatever its spec count (`test/unit/order/`, `test/e2e/order/`). Scaffolding shared across tiers (`createTestApp()`, the test auth guard, fakes and SDK mocks) lives in `test/helpers/`; setup that belongs to one tier (`global-setup.ts`) stays at that tier's root.
 - E2E: one spec per controller, `{resource}.spec.ts` for public routes and `{resource}.internal.spec.ts` for internal ones. **Never two specs over the same routes** - that is how a route ends up untested while each file assumes the other covers it. Several controllers exposing one resource through different parents share one spec. A guard or interceptor driven through probe routes (see `test-guards-and-interceptors`) gets one spec named after its source file: `src/auth/guards/roles.guard.ts` → `test/e2e/auth/roles.guard.spec.ts`.
 - Unit: the spec takes the source file's name under its module folder, dropping the type folder: `src/order/utils/calculate-order-total.ts` → `test/unit/order/calculate-order-total.spec.ts`.
-- Keep the full name on the file (`order/order.spec.ts`, never `order/public.spec.ts`): failures are read in jest output without the path.
+- Keep the full name on the file (`order/order.spec.ts`, never `order/public.spec.ts`): failures are read in the runner's output without the path.
 - Route blocks are `describe('VERB /path')`; direct service blocks are `describe('ServiceName.method')`, never the bare method name. Positives sit beside their negatives. Only authorization and isolation suites may group by caller identity instead of route.
 - Do not add tests for a method nothing calls: a test implies a contract someone depends on.
 
@@ -36,7 +38,7 @@ A test's tier is defined by **what it needs in order to run**, because that alon
 
 - Every package has a `test` script running its stack-free tiers (`test:unit && test:e2e`). Filtered runs such as `pnpm -r --if-present run test` silently skip a package without one and report green having run nothing.
 - `test:db` and `test:integration` are deliberately not part of `test`; developers run them before a PR that touches services, entities or migrations.
-- Measure coverage in **one** jest run over the stack-free tiers (a `projects` config). Separate runs cannot be added up because tiers overlap. Exclude wiring (`main.ts`, `*.module.ts`, `config/`) and nothing else. Do not enforce a threshold; use the number to find gaps.
+- Measure coverage in **one** run over the stack-free tiers (Vitest projects or a Jest `projects` config). Separate runs cannot be added up because tiers overlap. Exclude wiring (`main.ts`, `*.module.ts`, `config/`) and nothing else. Do not enforce a threshold; use the number to find gaps.
 
 **Incorrect (tests mixed into src, tiers by habit, one spec per module):**
 
@@ -50,7 +52,7 @@ src/
 
 // package.json
 "scripts": {
-  "test": "jest"                     // runs everything, including tests that need a database
+  "test": "vitest run"               // runs everything, including tests that need a database
 }
 ```
 
@@ -72,30 +74,16 @@ test/
 ├── integration/
 │   └── user/
 │       └── user.spec.ts
-├── helpers/                                 // shared by all tiers: create-test-app.ts, test-auth.guard.ts, fakes
-├── jest-unit.json                           // "testRegex": "test/unit/.+\\.spec\\.ts$"
-├── jest-e2e.json
-├── jest-db.json
-├── jest-integration.json
-└── jest-coverage.json                       // projects: [unit, e2e]
+└── helpers/                                 // shared by all tiers: create-test-app.ts, test-auth.guard.ts, fakes
 
-// package.json
+// package.json - one script per tier, `test` runs the stack-free ones
 "scripts": {
-  "test": "pnpm run test:unit && pnpm run test:e2e",
-  "test:unit": "jest --config ./test/jest-unit.json",
-  "test:e2e": "jest --config ./test/jest-e2e.json",
-  "test:db": "jest --config ./test/jest-db.json --runInBand",
-  "test:integration": "jest --config ./test/jest-integration.json --runInBand",
-  "test:coverage": "jest --config ./test/jest-coverage.json --coverage"
-}
-```
-
-```jsonc
-// test/jest-coverage.json
-{
-  "rootDir": "..",
-  "projects": ["<rootDir>/test/jest-unit.json", "<rootDir>/test/jest-e2e.json"],
-  "collectCoverageFrom": ["src/**/*.ts", "!src/main.ts", "!src/**/*.module.ts", "!src/config/**"]
+  "test": "...",              // test:unit + test:e2e
+  "test:unit": "...",
+  "test:e2e": "...",
+  "test:db": "...",           // one file at a time
+  "test:integration": "...",  // one file at a time
+  "test:coverage": "..."      // one run over unit + e2e
 }
 ```
 

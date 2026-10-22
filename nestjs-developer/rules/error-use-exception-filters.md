@@ -11,12 +11,14 @@ Never catch exceptions and format error responses in controllers. Services throw
 
 ```json
 { "success": false, "statusCode": 404, "error": "Not Found", "message": "User #00000000-0000-0000-0000-000000000000 not found" }
+{ "success": false, "statusCode": 409, "error": "Conflict", "message": "Email already registered", "errorCode": "EMAIL_TAKEN" }
 ```
 
 - Register it in `configureApp()` (`app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)))`, see `test-use-testing-module`), so e2e tests get the same error shape. Do not add a second filter per error type; extend this one.
 - Write it with `HttpAdapterHost` (`httpAdapter.reply(...)`) instead of Express's `response.status().json()`, so it works on Express and Fastify (see `api-platform-agnostic`).
-- Read the message from `exception.getResponse()`, not `exception.message`: for `ValidationPipe` errors it holds the per-field messages, while `exception.message` is just "Bad Request Exception".
+- Read the message from `exception.getResponse()`, not `exception.message`: for `ValidationPipe` errors it holds the per-field messages, while `exception.message` is just "Bad Request Exception". Keep `ValidationPipe`'s default `errorFormat: 'list'` (NestJS 12): `'grouped'` turns `message` into an object keyed by field, which the envelope's `string | string[]` does not allow.
 - Translate known non-HTTP errors here: a unique violation (`QueryFailedError` with PostgreSQL code `23505`) becomes 409, a domain error class shared with non-HTTP consumers becomes its status. Match on error codes, never on message text.
+- **Copy `errorCode` when the exception has one** (NestJS 12, `new ConflictException('Email already registered', { errorCode: 'EMAIL_TAKEN' })`). It is a stable identifier clients branch on instead of the message text, which may be reworded. Without the copy, the global filter drops it. Leave the field out of the body when there is none, so existing error responses do not change. NestJS 11 has no `errorCode` on exceptions: leave the copy out there.
 - Unknown errors become a generic 500. Log the stack and the `cause`; never send either to the client.
 - Every failed request gets one log line here: a 5xx at error level with the stack, any other status at warn level with the method, URL and status. Guards reject a request before any interceptor runs, so this filter is the only place that sees a 401, 403 or 429 (see `api-use-interceptors`).
 - When translating a lower-level error yourself, keep it as the `cause` so logs show the root cause.
@@ -71,6 +73,7 @@ export interface ApiErrorResponse {
   statusCode: number;
   error: string;
   message: string | string[];
+  errorCode?: string; // Only when the exception carries one
 }
 
 const PG_UNIQUE_VIOLATION = '23505';
@@ -103,6 +106,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error: this._errorName(statusCode),
       message: this._message(exception, statusCode),
     };
+    if (exception instanceof HttpException && exception.errorCode) {
+      body.errorCode = exception.errorCode; // Stable identifier for clients (NestJS 12)
+    }
 
     httpAdapter.reply(ctx.getResponse(), body, statusCode);
   }

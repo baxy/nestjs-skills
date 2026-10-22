@@ -36,8 +36,8 @@ describe('RolesGuard', () => {
 import request from 'supertest';
 
 const USERS: Record<string, JwtUser> = {
-  admin: { id: '00000000-0000-0000-0000-000000000001', email: 'admin@example.com', roles: [Role.Admin] },
-  user: { id: '00000000-0000-0000-0000-000000000002', email: 'jane@example.com', roles: [Role.User] },
+  admin: { id: '00000000-0000-4000-8000-000000000001', email: 'admin@example.com', roles: [Role.Admin] },
+  user: { id: '00000000-0000-4000-8000-000000000002', email: 'jane@example.com', roles: [Role.User] },
 };
 
 @Controller('probe')

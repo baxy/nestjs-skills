@@ -30,6 +30,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] No custom `@Global()` modules or `isGlobal` options; only third-party infrastructure (config, logger, CLS, cache, form-data) is global [arch-module-sharing]
 - [ ] Singular resource name for the module folder and the module, controller, service and entity classes and files (`src/order/`, `OrderModule`, `OrderController`, `OrderService`, `Order`); plural only in the URL and the table [arch-feature-modules]
 - [ ] Relative imports inside a module, `@/` alias across modules, never `../../sibling` [arch-import-boundaries]
+- [ ] ESM project (`"type": "module"`): relative and `@/` imports end in `.js`; `tsconfig.json` has no `baseUrl` on TypeScript 6 [arch-import-boundaries, references/project-setup]
 - [ ] Reusable infrastructure modules expose `forRoot`/`forRootAsync` instead of reading `process.env` [arch-use-dynamic-modules]
 - [ ] Lazy-loaded modules where startup time matters (serverless, CLI) [perf-lazy-loading]
 
@@ -89,6 +90,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] Entities returned to a client are class instances: `create()` for new rows, `merge()` for updates, never `save({ ...entity })` or `manager.save(Entity, { ... })`, which return plain objects that skip `@Exclude()`. **Critical** when a sensitive column such as `passwordHash` leaks this way [api-use-dto-serialization]
 - [ ] `SnakeNamingStrategy` configured on every DataSource (app and migration CLI); no per-column `name:` overrides [db-entity-conventions]
 - [ ] `@Entity('snake_case')`, camelCase properties, `timestamptz`, soft delete via `@DeleteDateColumn`, explicit `@JoinColumn` names, indexes and constraints named `IDX_`/`UQ_`/`CHK_` [db-entity-conventions]
+- [ ] ESM project: relation properties typed `Relation<Entity>`, plain columns never; types used in decorated signatures (`Relation`, `ConfigType`, interfaces) imported with `import type`, injected classes as values; `tsconfig.json` keeps `strictPropertyInitialization: false` on TypeScript 6 [references/project-setup]
 
 ## Dependency Injection
 - [ ] No `ModuleRef.get()` service locator outside factories and lazy loading [di-avoid-service-locator]
@@ -96,6 +98,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] Interfaces injected via `Symbol` tokens or abstract classes; no string tokens; no mocks selected by `NODE_ENV` [di-use-interfaces-tokens]
 - [ ] Interfaces are small and focused [di-interface-segregation]
 - [ ] Implementations are substitutable for their interfaces [di-liskov-substitution]
+- [ ] A subclass of a provider with `@Optional()` parameters declares its own constructor with the marker (NestJS 12 no longer inherits it) [di-prefer-constructor-injection]
 
 ## Guards and Authorization
 - [ ] `JwtAuthGuard` and `RolesGuard` registered globally; routes opt out with `@Public()`; no per-route `@UseGuards` for them [security-use-guards]
@@ -111,9 +114,10 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] No business logic in interceptors or middleware
 
 ## Error Handling
-- [ ] One global filter producing `{ success: false, statusCode, error, message }` [error-use-exception-filters]
+- [ ] One global filter producing `{ success: false, statusCode, error, message }`, plus `errorCode` when the exception carries one [error-use-exception-filters]
+- [ ] A client that must tell two errors with the same status apart gets an `errorCode` (`UPPER_SNAKE_CASE`, never changed once used), not a message to compare [error-throw-http-exceptions]
 - [ ] Filters use `HttpAdapterHost`, not Express `response.status().json()` [error-use-exception-filters]
-- [ ] Filter keeps ValidationPipe field messages (reads `getResponse()`, not `.message`) [error-use-exception-filters]
+- [ ] Filter keeps ValidationPipe field messages (reads `getResponse()`, not `.message`); `ValidationPipe` keeps the default `errorFormat: 'list'` [error-use-exception-filters]
 - [ ] Error responses don't expose stack traces or SQL errors; wrapped errors keep `{ cause }` [error-use-exception-filters]
 - [ ] The filter logs every failed request (5xx at error with the stack, others at warn); `LoggingInterceptor` logs successes only, since guard rejections (401, 403, 429) never reach it [error-use-exception-filters]
 - [ ] Async errors awaited/handled; no floating promises [error-handle-async-errors]
@@ -127,6 +131,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] **Critical:** TypeORM `synchronize` hardcoded to `false`, never `true` and never read from config [db-use-migrations]
 - [ ] Parameterized queries, no string concatenation [security-validate-all-input]
 - [ ] No N+1 queries [db-avoid-n-plus-one]
+- [ ] Find options use the object form of `relations` and `select`; no `null` or `undefined` value in a `where` object (TypeORM 1.x throws; leave the key out or use `IsNull()`) [references/project-setup]
 - [ ] List endpoints paginated with `limit`/`offset`, returning `{ result, count, limit, offset }` [perf-optimize-database]
 
 ## HTTP Platform (Express / Fastify)
@@ -155,7 +160,9 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] New constraints, partial indexes or migrations covered in the database tier, with savepoints for expected failures [test-database-tier]
 - [ ] Integration specs are order-independent and assert only on data they created [test-integration-suites]
 - [ ] External services mocked in unit and e2e tiers [test-mock-external-services]
+- [ ] Test UUIDs pass `@IsUUID()` (version digit set, as in `00000000-0000-4000-8000-000000000001`); `00000000-0000-0000-0000-000000000001` makes every route test using it fail with 400 [test-use-testing-module]
 - [ ] The package's `test` script runs the stack-free tiers [test-organize-by-tier]
+- [ ] Runner config and scripts match the runner in `package.json` (`references/test-runner-vitest.md` or `test-runner-jest.md`); the database and integration tiers run one file at a time. Either runner is fine: do not flag the choice, only a switch made as a side change [test-organize-by-tier]
 
 ## Performance
 - [ ] Caching for expensive, frequently read data with invalidation [perf-use-caching]
@@ -166,7 +173,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 ## Operations
 - [ ] Structured pino logging; `bufferLogs` + `useLogger`; no `console.log` except crash markers [devops-use-logging]
 - [ ] Request IDs as log fields, not inside messages [devops-use-logging]
-- [ ] Liveness and readiness probes, `@Public()` and `@SkipThrottle()`; liveness checks nothing external [micro-use-health-checks]
+- [ ] Liveness and readiness probes, `@Public()` and `@SkipThrottle()`; liveness checks nothing external; custom indicators return `up()`/`down()` from `HealthIndicatorService` and timeouts use `.withTimeout()` [micro-use-health-checks]
 - [ ] `enableShutdownHooks()` and no manual signal handlers; readiness fails in `beforeApplicationShutdown` [devops-graceful-shutdown]
 - [ ] Message/event patterns used correctly in microservices [micro-use-patterns]
 

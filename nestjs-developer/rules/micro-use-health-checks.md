@@ -18,7 +18,7 @@ The health controller opts out of the app's global behavior that does not apply 
 - `@SkipThrottle()`: probes run every few seconds (see `security-rate-limiting`).
 - `version: VERSION_NEUTRAL` when URI versioning is enabled, so the probe path stays stable (see `api-versioning`).
 
-A dependency without a built-in indicator gets a small custom one. Terminus 11 builds indicators with `HealthIndicatorService`; older versions extend the deprecated `HealthIndicator` class.
+A dependency without a built-in indicator gets a small custom one, built with `HealthIndicatorService` and returning `up()` or `down()`. Terminus 12 removed the old `HealthIndicator` base class and `HealthCheckError`: an indicator no longer reports failure by throwing. Give a built-in check its timeout with `.withTimeout(ms)`; the `timeout` option is deprecated. On NestJS 11 (Terminus 11), checks return a promise with no `.withTimeout()`: pass `{ timeout: 1_000 }` as the second argument instead.
 
 **Incorrect (static OK, or a probe that checks everything):**
 
@@ -66,7 +66,7 @@ export class HealthController {
       throw new ServiceUnavailableException('Shutting down');
     }
     return this.health.check([
-      () => this.db.pingCheck('database', { timeout: 1_000 }),
+      () => this.db.pingCheck('database').withTimeout(1_000),
       () => this.redisHealthIndicator.isHealthy('redis'),
     ]);
   }

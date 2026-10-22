@@ -11,7 +11,7 @@ Nest awaits the promise returned by `onModuleInit` and `onApplicationBootstrap` 
 
 - **Return (or `await`) the async work** in a hook. A promise started without being returned lets the app accept requests before the dependency is ready.
 - **Constructors stay synchronous and cheap.** No I/O, no `readFileSync`, no connection attempts.
-- `onModuleInit` prepares the module's own resources; `onApplicationBootstrap` runs once every module is initialized, so it may call other modules' services (cache warm-up).
+- `onModuleInit` prepares the module's own resources; `onApplicationBootstrap` runs once every module is initialized, so it may call other modules' services (cache warm-up). Do not rely on the order in which other modules' `onModuleInit` hooks run: NestJS 12 orders them by module hierarchy level, which can differ from earlier versions.
 - Close clients and connections in `onApplicationShutdown`, once the HTTP server has stopped serving, never in a signal handler (see `devops-graceful-shutdown`).
 - Settings come from config (see `devops-use-config-module`); never write your own `ConfigService`.
 

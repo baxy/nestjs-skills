@@ -11,6 +11,8 @@ In an HTTP application, services throw `HttpException` subclasses directly: `Not
 
 A service that is also used outside HTTP (a queue processor, a CLI) throws a domain error class instead, such as `EntityNotFoundException`. The global filter maps it to a status (see `error-use-exception-filters`); do not add a second filter for it.
 
+When a client needs to tell two errors with the same status apart (an email already taken versus a username already taken, insufficient stock versus a closed store), give the exception an `errorCode`: `throw new ConflictException('Email already registered', { errorCode: 'EMAIL_TAKEN' })`. Codes are `UPPER_SNAKE_CASE` and never change once clients use them; the message can still be reworded. The global filter copies the code into the error response (see `error-use-exception-filters`). Errors no client branches on need no code. The option exists from NestJS 12.
+
 Messages may include identifiers that were validated by a DTO (a UUID from `UserIdParamDto`); never echo unvalidated input back (see `security-sanitize-output`).
 
 **Incorrect (return error objects instead of throwing):**
