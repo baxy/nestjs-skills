@@ -36,7 +36,7 @@ Both are at version 1.1.0.
 │   └── rules/
 │       ├── _sections.md            # Section order and impact levels
 │       ├── _template.md            # Template for a new rule
-│       └── <prefix>-<name>.md      # 60 rules
+│       └── <prefix>-<name>.md      # 61 rules
 ├── nestjs-reviewer/
 │   ├── SKILL.md                    # Workflow, severity table, report format
 │   └── references/
@@ -117,7 +117,7 @@ The reasons behind these choices, and which ones are still open, are in [`DECISI
 
 | Section | Prefix | Impact | Rules |
 |---|---|---|---|
-| Architecture | `arch-` | Critical | 10 |
+| Architecture | `arch-` | Critical | 11 |
 | Dependency Injection | `di-` | Critical | 6 |
 | Error Handling | `error-` | High | 3 |
 | Security | `security-` | High | 6 |
@@ -215,6 +215,7 @@ When an eval's fixture moves, update the absolute path in that eval's prompt in 
 | 2026-10-22 | developer | 6 | not run | 100% (8/8) | Only the new `eval-5-existing-nest11`. Installed on NestJS 11 and run: 23 e2e tests pass; one TS1272 (`ConfigType` imported as a value) fixed in the rules after |
 | 2026-10-22 | developer | 7 | 0/5 pass the new comments assertion (113 of 179 comments broke it) | 96% (52/54) | `style-code-comments` added. Comments 179 → 24, violations 113 → 2. eval-4 and eval-5 installed and run: both type-check, build and pass their tests (6 and 17) with no manual fixes |
 | 2026-10-22 | developer | 8 | 1/4 resource-module outputs passed naming before the rule (8 violations) | 97% (57/59) | `arch-resource-naming` added: 0 naming violations. The two failures are single comments, addressed in `style-code-comments` after the run (units in names, no "for now" reasons) |
+| 2026-10-22 | developer | 9 | 3/5 passed the shared-folder assertion before the rule (both failures: a `shared/swagger/` folder copied from a rule example) | 97% (62/64) | `arch-shared-folder` added; one borderline shared case and one label comment, both clarified in the rules after the run |
 | 2026-10-19 | reviewer | 1 | 66% | 83% | 3 evals, 3 runs each |
 | 2026-10-19 | reviewer | 2 | 66% | 91% | |
 | 2026-10-19 | reviewer | 3 | 73% | 100% | Held-out `pr-171` added |

@@ -28,7 +28,7 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 | Task | Rules to read |
 |---|---|
 | New project | `references/project-setup.md` (`nest new`, ESM with Vitest), `references/test-runner-vitest.md`, `test-organize-by-tier`, `test-use-testing-module` (`configureApp()`), `devops-use-config-module`, `arch-import-boundaries` |
-| New feature module | `arch-feature-modules`, `arch-resource-naming`, `arch-import-boundaries`, `arch-module-sharing`, `arch-avoid-circular-deps`, `arch-service-conventions`, `arch-data-access-in-services` |
+| New feature module | `arch-feature-modules`, `arch-resource-naming`, `arch-shared-folder`, `arch-import-boundaries`, `arch-module-sharing`, `arch-avoid-circular-deps`, `arch-service-conventions`, `arch-data-access-in-services` |
 | New or changed service or provider | `arch-service-conventions`, `arch-single-responsibility`, `arch-data-access-in-services`, `di-prefer-constructor-injection`, `di-scope-awareness`, `error-throw-http-exceptions` |
 | Swappable implementation (interface, token, test double) | `di-use-interfaces-tokens`, `di-interface-segregation`, `di-liskov-substitution`, `di-avoid-service-locator` |
 | New or changed endpoint | `api-controller-conventions`, `api-dto-naming`, `api-use-pipes`, `security-validate-all-input`, `api-document-with-openapi`, `api-use-dto-serialization`, `security-use-guards` (`@Public()`/`@Roles()`), `api-custom-param-decorators`, `error-throw-http-exceptions` |
@@ -59,6 +59,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 - `arch-feature-modules` - Feature modules and type folders
 - `arch-resource-naming` - Singular resource names; every class, file and property in a resource module starts with the module name
+- `arch-shared-folder` - `src/shared/` holds domain-neutral files used by two or more modules, in type folders; no services
 - `arch-import-boundaries` - Relative imports inside a module, `@/` alias across modules
 - `arch-module-sharing` - Proper module exports/imports, avoid duplicate providers
 - `arch-avoid-circular-deps` - Avoid circular module dependencies

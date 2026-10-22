@@ -13,7 +13,7 @@ Generate API documentation from the code with `@nestjs/swagger` and its CLI plug
 - **Never duplicate validator information** in `@ApiProperty`: no `type`, `required`, `format` or `enum` when a validator already says it.
 - **Every controller** has exactly one `@ApiTags(...)` named after the resource, plus its security decorator (for example `@ApiBearerAuth('bearer')`). Do not document dev-only auth schemes.
 - **Every endpoint** has `@ApiOperation` with both `summary` and `description`.
-- **Success responses are documented inside the envelope.** Every JSON body is wrapped as `{ success, statusCode, data }` (see `api-use-interceptors`), so a plain `@ApiOkResponse({ type: X })` documents the wrong shape. Use `@ApiEnvelopedResponse(X)` for one object or an array (`isArray: true`) and `@ApiPaginatedResponse(X)` for a paginated list, both in `src/shared/swagger/`. They are recommended when the endpoint returns a response DTO (see `api-use-dto-serialization`), not required otherwise; a documented success response always uses one of the two.
+- **Success responses are documented inside the envelope.** Every JSON body is wrapped as `{ success, statusCode, data }` (see `api-use-interceptors`), so a plain `@ApiOkResponse({ type: X })` documents the wrong shape. Use `@ApiEnvelopedResponse(X)` for one object or an array (`isArray: true`) and `@ApiPaginatedResponse(X)` for a paginated list, both in `src/shared/decorators/`. They are recommended when the endpoint returns a response DTO (see `api-use-dto-serialization`), not required otherwise; a documented success response always uses one of the two.
 - Error responses specific to the endpoint are recommended too, each with a description of when it happens: `@ApiNotFoundResponse` for a missing resource, `@ApiConflictResponse` for a duplicate, `@ApiBadRequestResponse` for a broken domain rule, `@ApiForbiddenResponse` for a role check.
 - Expose the spec in every environment where clients need it; do not hide it behind `NODE_ENV`.
 
@@ -142,7 +142,7 @@ export class OrderController {
   }
 }
 
-// shared/swagger/api-enveloped-response.decorator.ts - the success envelope around one object or an array
+// shared/decorators/api-enveloped-response.decorator.ts - the success envelope around one object or an array
 export interface ApiEnvelopedResponseOptions {
   description: string;
   status?: HttpStatus;
@@ -170,7 +170,7 @@ export function ApiEnvelopedResponse(model: Type<unknown>, options: ApiEnveloped
   );
 }
 
-// shared/swagger/api-paginated-response.decorator.ts - data plus meta, as the envelope builds it from PaginatedResult
+// shared/decorators/api-paginated-response.decorator.ts - data plus meta, as the envelope builds it from PaginatedResult
 export function ApiPaginatedResponse(model: Type<unknown>, description: string) {
   return applyDecorators(
     ApiExtraModels(model),

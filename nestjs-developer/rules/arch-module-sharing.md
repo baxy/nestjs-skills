@@ -83,7 +83,7 @@ export class AppModule {}
 // Now all modules share the SAME StorageService instance
 ```
 
-**Global modules: only third-party infrastructure, registered once in `AppModule`.** `ConfigModule.forRoot({ isGlobal: true })` (see `devops-use-config-module`), the logger module, `ClsModule`, `CacheModule` (see `perf-use-caching`) and `NestjsFormDataModule` (see `api-file-uploads`) are global. Do not write your own `@Global()` modules or give your configurable modules an `isGlobal` option, and never a catch-all `CoreModule`/`CommonModule`/`SharedModule` that bundles unrelated services: it hides what each module depends on, and every consumer gets everything. Plain reusable files go in `src/shared/` and are imported directly (see `arch-feature-modules`); a reusable service gets its own module named for what it does.
+**Global modules: only third-party infrastructure, registered once in `AppModule`.** `ConfigModule.forRoot({ isGlobal: true })` (see `devops-use-config-module`), the logger module, `ClsModule`, `CacheModule` (see `perf-use-caching`) and `NestjsFormDataModule` (see `api-file-uploads`) are global. Do not write your own `@Global()` modules or give your configurable modules an `isGlobal` option, and never a catch-all `CoreModule`/`CommonModule`/`SharedModule` that bundles unrelated services: it hides what each module depends on, and every consumer gets everything. Plain reusable files go in `src/shared/` and are imported directly (see `arch-shared-folder`); a reusable service gets its own module named for what it does.
 
 ```typescript
 // Incorrect: a grab-bag module, global so nobody sees who uses what

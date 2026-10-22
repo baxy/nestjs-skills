@@ -29,7 +29,7 @@ Keep each comment short, on its own line above the code it explains.
 
 **Never write:**
 
-- What the code does, line by line, or what a name or type already says (`// Find the user`, `@param id the id`).
+- What the code does, line by line, or what a name or type already says (`// Find the user`, `@param id the id`, `// Largest value a PostgreSQL integer column holds` above `PG_INTEGER_MAX`).
 - A convention these rules already state (`// Hardcoded, never from config`, `// Outermost first`): the rule lives in the rules, not at each place that follows it.
 - Details of other files, which change without this file changing (`// Shared by main.ts and test/helpers/create-test-app.ts`, `// Called by SessionService for POST /sessions`). A reason may say that other modules depend on this code (`// Not scoped to a caller: other modules look users up by id`); it does not name them or describe what they do.
 - Statements tied to the moment of writing (`// For the endpoints that come next`, `// New`, `// Temporary`) without a ticket, including reasons that hold only until a later change (`// There are no write routes yet, so the specs insert rows directly`). Put those in the PR description or a `TODO(ticket)`.
