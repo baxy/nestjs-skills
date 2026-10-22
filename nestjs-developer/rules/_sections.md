@@ -53,7 +53,7 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 ## 10. Code Style (style)
 
 **Impact:** MEDIUM
-**Description:** Team-wide style conventions that apply regardless of framework: the `_` prefix on private methods, no em dash, and US-English spelling.
+**Description:** Team-wide style conventions that apply regardless of framework: comments only where the code cannot say it, the `_` prefix on private methods, no em dash, and US-English spelling.
 
 ## 11. DevOps & Deployment (devops)
 

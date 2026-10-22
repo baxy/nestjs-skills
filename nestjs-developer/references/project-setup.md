@@ -66,7 +66,7 @@ Start from `nest new` with the current CLI and keep its defaults, then apply the
 | `passport`, `passport-jwt` | `^0.7.0`, `^4.0.1` |
 | `argon2` | `^0.45.0` |
 | `bullmq` | `^6.0.0` |
-| `cache-manager` (the library itself) with `@keyv/redis` | `^7.0.0`, `^6.0.0` |
+| `cache-manager` (the library itself) with `@keyv/redis` | `^7.0.0`, `^5.0.0` (`@keyv/redis` 6 needs `keyv` 6; `cache-manager` 7 uses `keyv` 5) |
 | `pg` | `^8.0.0` |
 | `pino-pretty`, `helmet` | `^13.0.0`, `^8.0.0` |
 | `typescript`, `vitest`, `vite` | `^6.0.2`, `^4.1.2`, `^8.0.0` (as `nest new` generates) |

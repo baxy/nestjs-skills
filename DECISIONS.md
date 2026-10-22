@@ -2,7 +2,7 @@
 
 Settled choices behind `nestjs-developer` and `nestjs-reviewer`. A difference from the upstream sources that traces to an entry here is intentional; do not re-raise it in a review. Entries marked **(unconfirmed)** were made by the assistant and never explicitly approved: treat them as open.
 
-Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **S3** password rule, **S4** contradiction fixes and evals, **S5** source re-check, **S6** NestJS 12, Vitest and ESM.
+Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **S3** password rule, **S4** contradiction fixes and evals, **S5** source re-check, **S6** NestJS 12, Vitest and ESM, **S7** the user's new rules.
 
 ## Sources
 
@@ -109,6 +109,8 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 ## Style
 
 - `_` prefix on private methods only, never on injected dependencies (S1 C10, S2).
+- No comment by default: names, constants and extracted functions carry the meaning; a comment only says why (outside constraint, subtle invariant, complex algorithm, workaround with issue link, `TODO(ticket)`). Stale comments are deleted in the files a change touches and listed for other files. The comments in rule examples are notes for the agent, never copied into code (S7, the user's rule).
+- Reviewer comment findings are grouped per file, so comment noise does not flood a review (S7).
 - No em dash; US English (S1).
 
 ## Reviewer

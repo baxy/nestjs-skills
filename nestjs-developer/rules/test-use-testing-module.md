@@ -15,7 +15,7 @@ In the e2e tier (see `test-organize-by-tier`), build the **real** controller and
 - **One helper knows the HTTP adapter.** `createTestApp()` creates the app for Express or Fastify; specs never touch adapter APIs, so they run unchanged on either (see `api-platform-agnostic`).
 - Provide the caller with a test guard registered as `APP_GUARD` that sets a `JwtUser`; add `RolesGuard` after it when the suite covers role rules.
 - Repositories are plain objects of mock functions (`vi.fn()` in Vitest, `jest.fn()` in Jest). A service that uses a query builder gets a chainable mock (every builder method returns the builder) so the test can assert the conditions it received.
-- A service method with **no route** gets a direct `describe('ServiceName.method')` block only when it has a non-HTTP consumer (another module calls it); name the consumer in a comment. A method with no caller at all gets no test.
+- A service method with **no route** gets a direct `describe('ServiceName.method')` block only when it has a non-HTTP consumer (another module calls it); name the consumer in the block title, `describe('UserService.verifyCredentials (used by SessionService)')`, not in a comment. A method with no caller at all gets no test.
 - Reset mocks between tests (`beforeEach(() => vi.clearAllMocks())`, or `jest.clearAllMocks()`); put shared constants (UUIDs, mock objects) at the top of the file. Test UUIDs must pass `@IsUUID()`, which checks the version digit: use `00000000-0000-4000-8000-000000000001` and so on. `00000000-0000-0000-0000-000000000001` is rejected with a 400, so every route test using it fails before reaching the service.
 
 **Incorrect (mocking the service under test, or bypassing the HTTP layer):**

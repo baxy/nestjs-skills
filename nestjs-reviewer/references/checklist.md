@@ -178,6 +178,7 @@ Rule IDs in brackets refer to `../nestjs-developer/rules/<rule-id>.md`, relative
 - [ ] Message/event patterns used correctly in microservices [micro-use-patterns]
 
 ## Code Style
+- [ ] New or changed comments say why, not what: no narration, no restated names or types, no repeated conventions, no details of other files, no history, no commented-out code; TODOs carry a ticket and an action; comments in changed code still match it. Report one finding per file listing the lines, not one per comment; a comment that contradicts the code is a Warning on its own [style-code-comments]
 - [ ] Private methods, and only private methods, use the `_` prefix [style-private-underscore-prefix]
 - [ ] No em dash anywhere (code, comments, strings, docs) [style-no-em-dash]
 - [ ] US-English spelling in identifiers, messages and docs [style-us-english]

@@ -22,7 +22,7 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 
 1. Check the project's `package.json` first: `"type": "module"` means ESM, and the test runner is whichever of `vitest` or `jest` it lists. Keep both as they are; for an ESM project, read `references/project-setup.md` before writing code. When no `package.json` is available, follow what the existing files show (`.js` import extensions, `vi.` or `jest.`); with no files at all it is a new project (ESM with Vitest). State the assumption in your answer.
 2. Find the task in the table below and **read every rule file listed for it before writing code**. The one-line summaries in the index are reminders, not the rule.
-3. The `style-` rules apply to every file, comment, message and doc you write.
+3. The `style-` rules apply to every file, comment, message and doc you write. Read `style-code-comments` before writing code: the comments in the rule examples are notes for you, not part of the pattern.
 4. Each example focuses on one rule and may leave out unrelated decorators (Swagger, guards) for brevity. Apply all relevant rules together.
 
 | Task | Rules to read |
@@ -136,6 +136,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 ### 10. Code Style (MEDIUM) - `style-`
 
+- `style-code-comments` - No comment by default; names carry the meaning; comments only say why; stale comments are deleted
 - `style-private-underscore-prefix` - `_` prefix on private methods only
 - `style-no-em-dash` - Never use the em dash character
 - `style-us-english` - US-English spelling everywhere

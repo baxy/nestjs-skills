@@ -36,7 +36,7 @@ Both are at version 1.1.0.
 │   └── rules/
 │       ├── _sections.md            # Section order and impact levels
 │       ├── _template.md            # Template for a new rule
-│       └── <prefix>-<name>.md      # 58 rules
+│       └── <prefix>-<name>.md      # 59 rules
 ├── nestjs-reviewer/
 │   ├── SKILL.md                    # Workflow, severity table, report format
 │   └── references/
@@ -107,7 +107,7 @@ The main conventions, in short:
 - **Database:** `SnakeNamingStrategy`; named indexes and constraints (`IDX_`, `UQ_`, `CHK_`); migrations only generated from entities, applied as a separate deploy step; `synchronize` hardcoded to `false`.
 - **Background work:** BullMQ job schedulers for cluster-wide jobs, `@Cron` only for per-instance work.
 - **Tests:** four tiers under `test/` (unit, e2e, database, integration), with Vitest or Jest; e2e specs run the real controller and service with mocked repositories, through a `createTestApp()` that shares `configureApp()` with `main.ts`.
-- **Style:** `_` prefix on private methods only, no em dash, US English.
+- **Style:** no comment unless the code cannot say it, and then only why; `_` prefix on private methods only; no em dash; US English.
 
 The reasons behind these choices, and which ones are still open, are in [`DECISIONS.md`](DECISIONS.md).
 
@@ -126,7 +126,7 @@ The reasons behind these choices, and which ones are still open, are in [`DECISI
 | Database & ORM | `db-` | Medium-high | 4 |
 | API Design | `api-` | Medium | 11 |
 | Microservices | `micro-` | Medium | 3 |
-| Code Style | `style-` | Medium | 3 |
+| Code Style | `style-` | Medium | 4 |
 | DevOps & Deployment | `devops-` | Low-medium | 3 |
 
 ## nestjs-reviewer
@@ -213,6 +213,7 @@ When an eval's fixture moves, update the absolute path in that eval's prompt in 
 | 2026-10-22 | developer | 4 | not run | 100% (34/34) | NestJS 12 update; new `eval-4-new-project-esm`. The eval-4 project was installed and run: it type-checks and builds, and its e2e tests passed once the invalid test UUIDs were fixed (fixed in the rules afterwards). UUID and package-version assertions were added after this run |
 | 2026-10-22 | developer | 5 | not run | 97% (38/39) | eval-2 used `@nestjs/cache-manager` and throttler-storage majors that predate NestJS 12 (version table clarified after). The eval-4 project was installed and run: tests pass, the build needed `strictPropertyInitialization: false` and type-only imports (both added to `project-setup.md` after) |
 | 2026-10-22 | developer | 6 | not run | 100% (8/8) | Only the new `eval-5-existing-nest11`. Installed on NestJS 11 and run: 23 e2e tests pass; one TS1272 (`ConfigType` imported as a value) fixed in the rules after |
+| 2026-10-22 | developer | 7 | 0/5 pass the new comments assertion (113 of 179 comments broke it) | 96% (52/54) | `style-code-comments` added. Comments 179 → 24, violations 113 → 2. eval-4 and eval-5 installed and run: both type-check, build and pass their tests (6 and 17) with no manual fixes |
 | 2026-10-19 | reviewer | 1 | 66% | 83% | 3 evals, 3 runs each |
 | 2026-10-19 | reviewer | 2 | 66% | 91% | |
 | 2026-10-19 | reviewer | 3 | 73% | 100% | Held-out `pr-171` added |

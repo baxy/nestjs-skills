@@ -14,7 +14,8 @@
         "E2E spec at test/e2e/order/order.spec.ts using shared helpers from test/helpers/",
         "No per-route @UseGuards",
         "No hand-written structural migration (db-use-migrations)",
-        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)"
+        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)",
+        "Comments only say why (outside constraint, subtle invariant, workaround with issue link, TODO with ticket): none narrate the code, restate a name or type, repeat a rule convention, describe other files, record history or a moment in time"
       ]
     },
     {
@@ -30,7 +31,8 @@
         "Indexes and constraints named explicitly (IDX_/UQ_)",
         "validate-env requires AUTH_JWT_SECRET, ISSUER and AUDIENCE",
         "SnakeNamingStrategy on the app and the migration DataSource",
-        "package.json uses package majors that exist and support NestJS 12 (e.g. @nestjs/config ^12, @nestjs/throttler ^6, nestjs-pino ^5)"
+        "package.json uses package majors that exist and support NestJS 12 (e.g. @nestjs/config ^12, @nestjs/throttler ^6, nestjs-pino ^5)",
+        "Comments only say why (outside constraint, subtle invariant, workaround with issue link, TODO with ticket): none narrate the code, restate a name or type, repeat a rule convention, describe other files, record history or a moment in time"
       ]
     },
     {
@@ -47,7 +49,8 @@
         "Login is POST /sessions; specs in test/e2e/user, test/e2e/auth, test/db/user; helpers from test/helpers",
         "PasswordHasher not exported from UserModule",
         "No hand-written structural migration (db-use-migrations)",
-        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)"
+        "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)",
+        "Comments only say why (outside constraint, subtle invariant, workaround with issue link, TODO with ticket): none narrate the code, restate a name or type, repeat a rule convention, describe other files, record history or a moment in time"
       ]
     },
     {
@@ -66,7 +69,8 @@
         "configureApp() shared by main.ts and createTestApp(); real ProductService with a mocked repository in the e2e spec",
         "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)",
         "package.json uses package majors that exist and support NestJS 12 (e.g. @nestjs/config ^12, @nestjs/throttler ^6, nestjs-pino ^5)",
-        "Type-checks under TypeScript 6: tsconfig.json keeps strictPropertyInitialization false, and Relation is a type-only import"
+        "Type-checks under TypeScript 6: tsconfig.json keeps strictPropertyInitialization false, and Relation is a type-only import",
+        "Comments only say why (outside constraint, subtle invariant, workaround with issue link, TODO with ticket): none narrate the code, restate a name or type, repeat a rule convention, describe other files, record history or a moment in time"
       ]
     },
     {
@@ -82,7 +86,8 @@
         "Duplicate SKU returns 409 with something the client can branch on, without the NestJS 12 errorCode exception option",
         "Test UUIDs pass @IsUUID() (no 00000000-0000-0000-0000-00000000000N)",
         "E2E spec drives the real ProductService over HTTP with a mocked repository; tests live under test/, not src/",
-        "Type-checks: types used in decorated signatures (ConfigType, interfaces) are type-only imports"
+        "Type-checks: types used in decorated signatures (ConfigType, interfaces) are type-only imports",
+        "Comments only say why (outside constraint, subtle invariant, workaround with issue link, TODO with ticket): none narrate the code, restate a name or type, repeat a rule convention, describe other files, record history or a moment in time"
       ]
     }
   ]
