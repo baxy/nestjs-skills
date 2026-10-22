@@ -41,7 +41,7 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 - Param, query and body bound to DTO classes, no inline pipes (S1, C7).
 - DTO naming: `.param.dto.ts`, verb-first queries, `{concern}.query.dto.ts` for reusable pieces, `-response.dto.ts`, `{shape}.dto.ts` (S1, A5).
 - Offset pagination `{ result, count, limit, offset }`, defaults 20/0, `@Max(100)` (S1, C8).
-- Response envelope `{ success, statusCode, data, meta }` and error `{ success: false, statusCode, error, message }` (S1, C9), plus an optional `errorCode` copied from NestJS 12's exception option when present; services set one only where a client branches on it (S6).
+- Response envelope `{ success, statusCode, data, meta }` and error `{ success: false, statusCode, error, message }` (S1, C9), plus an optional `errorCode` read from `getResponse()`: NestJS 12's exception option, or on NestJS 11 a response object `{ message, errorCode }`. Services set one only where a client branches on it (S6).
 - Returning an entity is fine with `@Exclude()` + `@ApiHideProperty()` on hidden columns; a response DTO is used when the shape differs; a request body is never bound to an entity (S1, C2).
 - Swagger: `description` + `example` on every DTO field, `summary` + `description` on every endpoint, spec in every environment, nil UUID, fictional dates, `+` for long descriptions, no `servers` with a global prefix (S1, C3/A7). Nested-DTO fields need no `example` of their own (S4).
 - Success responses are documented inside the envelope with `@ApiEnvelopedResponse` / `@ApiPaginatedResponse`; still recommended, not required (S5).
@@ -100,7 +100,7 @@ Sessions: **S1** creation (run from `~/workspace`), **S2** first restructure, **
 
 ## Project setup
 
-- The rules target NestJS 12 (S6). Existing projects keep their module system, runner and linter; `references/project-setup.md` says how to read them from `package.json` (S6).
+- The rules target NestJS 12 and stay valid on NestJS 11: v12-only APIs carry their v11 alternative in the rule. Checked with `eval-5-existing-nest11`, run on a real NestJS 11 install (S6). Existing projects keep their module system, runner and linter; `references/project-setup.md` says how to read them from `package.json` (S6).
 - New projects start from `nest new` with its defaults: ESM with Vitest, oxlint, TypeScript 6 (S6).
 - ESM specifics (`.js` import extensions, `Relation<>` on entity relations, `typeorm-ts-node-esm`) live in `references/project-setup.md`, not in every rule example (S6).
 - TypeORM 1.x for new projects, with `typeorm-naming-strategies` allowed through a package-manager override (its peer range stops at 0.3; it works on 1.1). If it stops working on a later TypeORM, copy the strategy into `src/shared/` instead of staying on 0.3 (S6).

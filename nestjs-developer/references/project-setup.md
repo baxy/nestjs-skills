@@ -77,6 +77,10 @@ Start from `nest new` with the current CLI and keep its defaults, then apply the
 - `@nest-lab/throttler-storage-redis` 1.2.0 (Redis storage for `@nestjs/throttler`, see `security-rate-limiting`) declares NestJS up to 11. Allow it with the same override.
 - `nestjs-form-data` 11.0.1 (`api-file-uploads`) declares NestJS up to 11 and `class-validator` 0.14. Add it only when the project takes uploads, and check for a release that supports NestJS 12 first.
 
+## Compiler settings (NestJS 11 and 12)
+
+**Types in decorated signatures are imported as types, in CommonJS and ESM alike.** The `tsconfig.json` that `nest new` generates on NestJS 11 and 12 enables `isolatedModules` and `emitDecoratorMetadata`. With both on, a name that is only a type and appears in a decorated constructor parameter or property fails with TS1272 when imported as a value: `import type { ConfigType } from '@nestjs/config'`, `import { type Relation } from 'typeorm'`, interfaces. A class Nest injects by type (a service, a repository's entity) stays a value import: the metadata needs it at runtime.
+
 ## ESM differences
 
 The rule examples are written without file extensions. In an ESM project:
@@ -86,7 +90,6 @@ The rule examples are written without file extensions. In an ESM project:
 - **`tsconfig.json` has no `baseUrl`**: TypeScript 6 fails the build on it (TS5101). `paths` entries are relative to the tsconfig: `"paths": { "@/*": ["./src/*"] }`.
 - `import.meta.dirname` replaces `__dirname`; `createRequire(import.meta.url)` gives a `require` where one is still needed.
 - `main.ts` ends with a top-level `await bootstrap();`, as generated.
-- **Types in decorated signatures are imported as types.** With `isolatedModules` and `emitDecoratorMetadata` (both generated), a name that is only a type and appears in a decorated constructor parameter or property fails with TS1272 when imported as a value: `import type { ConfigType } from '@nestjs/config'`, `import { type Relation } from 'typeorm'`, interfaces. A class Nest injects by type (a service, a repository's entity) stays a value import: the metadata needs it at runtime.
 - **TypeORM relations are typed with `Relation<>`** to avoid circular-import errors between entities: `user: Relation<User>;`. Import it as a type, `import { type Relation } from 'typeorm'`: with `isolatedModules` and `emitDecoratorMetadata` (both generated), a plain import of a type used in a decorated property fails with TS1272. Only relation properties take it, never plain columns.
 - **The TypeORM CLI** runs through `typeorm-ts-node-esm` in an ESM project (`"typeorm": "typeorm-ts-node-esm"` in the scripts) instead of `typeorm-ts-node-commonjs`. It does not apply the `@/` alias; when entities import across modules and `migration:generate` fails to resolve those imports, build first and point the CLI at the compiled DataSource in `dist/`, where the alias is already rewritten.
 - **`supertest` is a default import**: `import request from 'supertest'`. `import * as request` fails with "is not a function".

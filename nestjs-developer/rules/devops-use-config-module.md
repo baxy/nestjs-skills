@@ -22,7 +22,7 @@ Use `@nestjs/config` with **one config file per concern**. Each file maps enviro
 
 - Required value: `configService.getOrThrow<string>('auth.jwt.secret')`.
 - Optional value: `configService.get<boolean>('db.logging', false)`, always with the default at the call site.
-- Several values of one namespace in a provider: inject the namespace itself, `@Inject(mailConfig.KEY) private readonly mailSettings: ConfigType<typeof mailConfig>`, which is fully typed. Name the parameter `{namespace}Settings`, never the same as the config constant: `typeof mailConfig` would then refer to the parameter itself and fail to compile (TS2502).
+- Several values of one namespace in a provider: inject the namespace itself, `@Inject(mailConfig.KEY) private readonly mailSettings: ConfigType<typeof mailConfig>`, which is fully typed. Import the type with `import type { ConfigType } from '@nestjs/config'`: the `tsconfig.json` that `nest new` generates (NestJS 11 and 12) enables `isolatedModules` with `emitDecoratorMetadata`, and a value import used in a decorated constructor fails with TS1272. Name the parameter `{namespace}Settings`, never the same as the config constant: `typeof mailConfig` would then refer to the parameter itself and fail to compile (TS2502).
 - Module factories (`forRootAsync`, `registerAsync`) follow the same rule: `inject: [dbConfig.KEY]` with a `dbSettings` parameter, not `ConfigService` with one `getOrThrow` per key.
 - Keys are always namespaced paths (`db.host`, `auth.jwt.issuer`). Never pass a raw environment variable name (`'DB_HOST'`, `'JWT_SECRET'`) to `ConfigService`.
 
