@@ -1,13 +1,35 @@
 # NestJS Skills
 
-Two Claude Code skills for NestJS work: `nestjs-developer` writes code to a fixed set of conventions, and `nestjs-reviewer` reviews code against the same conventions. They share one set of rules, so what the developer skill writes is what the reviewer skill expects.
+Claude Code skills for NestJS work and legacy codebase analysis.
 
 | Skill | Use it to | Entry point |
 |---|---|---|
 | `nestjs-developer` | Write, generate or refactor NestJS code: modules, controllers, services, DTOs, guards, interceptors, entities, migrations, tests, `main.ts` | [`nestjs-developer/SKILL.md`](nestjs-developer/SKILL.md) |
 | `nestjs-reviewer` | Review a NestJS branch, pull request or set of files and report findings with evidence and fixes | [`nestjs-reviewer/SKILL.md`](nestjs-reviewer/SKILL.md) |
+| `legacy-to-clean-specs` | Reverse-engineer a spaghetti/legacy codebase and produce complete specifications for a clean rewrite or modular replacement | [`legacy-to-clean-specs/SKILL.md`](legacy-to-clean-specs/SKILL.md) |
 
-Both are at version 1.1.0.
+The NestJS skills are at version 1.1.0. `legacy-to-clean-specs` is a general-purpose reverse-engineering + redesign skill.
+
+## Related skills (from Jeffallan/claude-skills)
+
+These complement `legacy-to-clean-specs` and stay up to date from the original source. They are **not** vendored in this repository.
+
+| Skill | Purpose | Install |
+|-------|---------|---------|
+| **feature-forge** | Structured requirements workshops, EARS, acceptance criteria, implementation checklists | `npx skills add jeffallan/claude-skills --skill feature-forge` |
+| **architecture-designer** | High-level system design, ADRs, patterns, NFRs | `npx skills add jeffallan/claude-skills --skill architecture-designer` |
+| **fullstack-guardian** | Secure full-stack implementation | `npx skills add jeffallan/claude-skills --skill fullstack-guardian` |
+
+Or clone once and symlink (same style as this repo):
+
+```bash
+git clone https://github.com/Jeffallan/claude-skills.git ~/workspace/claude-skills
+ln -s ~/workspace/claude-skills/skills/feature-forge     ~/.claude/skills/feature-forge
+ln -s ~/workspace/claude-skills/skills/architecture-designer ~/.claude/skills/architecture-designer
+ln -s ~/workspace/claude-skills/skills/fullstack-guardian ~/.claude/skills/fullstack-guardian
+```
+
+Then `git pull` inside `~/workspace/claude-skills` whenever you want updates. Re-running `npx skills add ...` also updates them.
 
 ## Contents
 
@@ -42,6 +64,11 @@ Both are at version 1.1.0.
 │   └── references/
 │       ├── checklist.md            # What to check per area, each item tagged with its rule ID
 │       └── anti-patterns.md        # Common problems and their fixes
+├── legacy-to-clean-specs/
+│   ├── SKILL.md
+│   ├── CHANGELOG.md
+│   ├── references/                 # analysis-process, ears-format, checklist, template, debt-and-smells, target-architecture-patterns
+│   └── evals/
 └── evals/
     ├── nestjs-developer-workspace/
     │   ├── evals.json              # 5 coding tasks with assertions
@@ -63,9 +90,10 @@ Personal install (available in every project), by symlinking so a `git pull` upd
 git clone https://github.com/baxy/nestjs-skills.git ~/workspace/nestjs-skills
 ln -s ~/workspace/nestjs-skills/nestjs-developer ~/.claude/skills/nestjs-developer
 ln -s ~/workspace/nestjs-skills/nestjs-reviewer  ~/.claude/skills/nestjs-reviewer
+ln -s ~/workspace/nestjs-skills/legacy-to-clean-specs ~/.claude/skills/legacy-to-clean-specs
 ```
 
-Project install (shared with everyone working on one repository): copy both folders into that repository's `.claude/skills/`.
+Project install (shared with everyone working on one repository): copy the skill folders into that repository's `.claude/skills/`.
 
 Start a new Claude Code session after installing so the skills are picked up.
 
@@ -79,6 +107,8 @@ Add a cancel action to orders: only pending or paid orders can be canceled, with
 Use nestjs-reviewer to review this branch against main.
 
 Review the changes in src/order/ before I open the PR.
+
+Analyze this legacy NestJS codebase and write specs for a clean modular rewrite.
 ```
 
 The developer skill reads only the rules listed for the task in its task table, then writes the code. The reviewer works through its checklist, opens the rule behind every finding before reporting it, and returns:
@@ -230,44 +260,4 @@ When an eval's fixture moves, update the absolute path in that eval's prompt in 
 
 Evals score the code by reading it. Running a generated project, as done for developer iterations 4 to 7, catches what reading misses (test data the validators reject, package versions that don't exist, TypeScript 6 compile errors), so do that for a setup change.
 
-Known variation between runs, which passes the assertions but is worth watching: a missing migration is sometimes rated Warning instead of Critical, and a `no rule` defect is sometimes reported as a Suggestion.
-
-## Changing a rule
-
-1. Read [`DECISIONS.md`](DECISIONS.md) first. A difference from the upstream sources or from generic NestJS advice that traces to an entry there is intentional.
-2. Edit the rule in `nestjs-developer/rules/`, or create one from `_template.md` with the section prefix from `_sections.md`. Keep one incorrect and one correct example.
-3. Update `nestjs-developer/SKILL.md`: the rule index line and, if the rule applies to a task, the task table.
-4. Add or update the item in `nestjs-reviewer/references/checklist.md`, tagged with the rule ID (or `references/<file>` for guidance that lives in `nestjs-developer/references/`). If a broken rule should be rated other than Warning, say so in the item.
-5. Record the decision in `DECISIONS.md`.
-6. For a new rule, add an assertion for it to the evals and grade the previous iteration's outputs on it first. That "before" number shows what the rule changes.
-7. Run the checks below, then the evals.
-
-```bash
-# No em dashes outside the style rule that bans them
-grep -rn '—' nestjs-developer nestjs-reviewer | grep -v style-no-em-dash.md
-
-# Every code fence is closed
-for f in nestjs-developer/rules/*.md nestjs-developer/references/*.md nestjs-*/SKILL.md nestjs-reviewer/references/*.md; do
-  [ $(( $(grep -c '^\s*```' "$f") % 2 )) -ne 0 ] && echo "unclosed fence: $f"
-done
-
-# Every rule ID and reference tagged in the reviewer exists
-grep -rhoE '\[[a-z/]+(-[a-z0-9]+)+(, [a-z/-]+)*\]' nestjs-reviewer | tr -d '[]' | tr ',' '\n' | tr -d ' ' | sort -u |
-  while read r; do
-    case "$r" in
-      references/*) [ -f "nestjs-developer/$r.md" ] || echo "missing reference: $r" ;;
-      *) [ -f "nestjs-developer/rules/$r.md" ] || echo "missing rule: $r" ;;
-    esac
-  done
-```
-
-## Sources
-
-The rules started from two open-source skill collections and were then rewritten around the conventions above:
-
-- [Kadajett/agent-nestjs-skills](https://github.com/Kadajett/agent-nestjs-skills) at `3986e0c`: the base of `nestjs-developer` (40 rules).
-- [giuseppe-trisciuoglio/developer-kit](https://github.com/giuseppe-trisciuoglio/developer-kit) at `fe73fb3`: rules that filled gaps (mapped types, OpenAPI, custom decorators, dynamic modules, guard and interceptor tests) and the original code review skill that became `nestjs-reviewer`.
-
-The comments, naming, shared-folder and config-folder rules were added later from the maintainer's own practice, with the naming and folder conventions taken from the cleanest domain of an internal NestJS platform.
-
-What was kept, merged, rewritten or left out is recorded in [`DECISIONS.md`](DECISIONS.md).
+Known variation between runs, which passes the assertions but is worth watching: a missing migration is sometimes rated Warning instead of Critical, and a service method without `authUser` is sometimes not flagged when the rule does not require it.
