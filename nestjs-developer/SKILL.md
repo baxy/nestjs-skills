@@ -69,7 +69,7 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 - `arch-avoid-circular-deps` - Avoid circular module dependencies
 - `arch-single-responsibility` - Focused services over "god services"
 - `arch-service-conventions` - Singular services, injection and parameter order, domain validation
-- `arch-data-access-in-services` - `@InjectRepository` in services, queries in the service, no custom repository classes
+- `arch-data-access-in-services` - Data access in services; TypeORM repositories or PrismaService; no custom repository layer
 - `arch-use-events` - Event-driven decoupling; `{object}.{action}` event names
 - `arch-use-dynamic-modules` - Configurable modules with `ConfigurableModuleBuilder`
 
