@@ -2,7 +2,7 @@
 title: Prisma Schema Conventions
 impact: MEDIUM-HIGH
 impactDescription: Consistent models, snake_case columns, named indexes
-tags: database, prisma, schema, conventions
+tags: database, prisma, schema, conventions, soft-delete
 ---
 
 ## Prisma Schema Conventions
@@ -24,14 +24,14 @@ model Order {
 
 ```prisma
 model Order {
-  id             String    @id @default(uuid())
-  userId         String    @map("user_id")
-  status         String    @default("pending")
-  totalCents     Int       @map("total_cents")
-  shippingAddress Json     @map("shipping_address")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  status          String    @default("pending")
+  totalCents      Int       @map("total_cents")
+  shippingAddress Json      @map("shipping_address")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   user  User        @relation(fields: [userId], references: [id])
   items OrderItem[]
@@ -41,10 +41,31 @@ model Order {
 }
 ```
 
+### Soft deletes
+
+Prisma has no automatic soft-delete. Always filter `deletedAt: null` in queries that should exclude soft-deleted rows:
+
+```typescript
+// Correct
+await prisma.order.findMany({
+  where: { userId, deletedAt: null },
+});
+
+// Soft-delete a record
+await prisma.order.update({
+  where: { id },
+  data: { deletedAt: new Date() },
+});
+```
+
+If you use a client extension for soft deletes, document it and make sure every query path goes through the extended client.
+
+### Other conventions
+
 - Singular model names, plural table names via `@@map`.
 - Explicit `@map` for snake_case columns so the database matches the rest of the project.
 - Named indexes with the same `IDX_` / `UQ_` / `CHK_` convention used by the TypeORM rules.
-- Soft deletes use a nullable `deletedAt` and are filtered in queries (Prisma has no automatic soft-delete).
 - Do not put API/Swagger concerns in the schema; those belong in DTOs.
+- Prefer generated Prisma types for internal use; keep public API DTOs separate (class-validator).
 
 Reference: [Prisma schema reference](https://www.prisma.io/docs/orm/prisma-schema/data-model)
