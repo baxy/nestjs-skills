@@ -1,0 +1,36 @@
+{
+  "skill": "legacy-to-clean-specs",
+  "test_cases": [
+    {
+      "name": "full_legacy_python_analysis",
+      "input": "Analyze this spaghetti Python codebase and produce reverse-engineered specs plus a clean target architecture for a new project",
+      "assertions": [
+        "Performs thorough exploration with validation checkpoint",
+        "Extracts requirements in EARS format with code evidence",
+        "Separates facts from inferences",
+        "Diagnoses code smells and structural debt",
+        "Proposes modular target architecture and module breakdown",
+        "Outputs comprehensive new-project specifications"
+      ]
+    },
+    {
+      "name": "rails_monolith_to_services",
+      "input": "This undocumented Rails monolith is a mess. Reverse-engineer the order processing rules (evidence-based) and write specs for a cleaner modular design",
+      "assertions": [
+        "Uses dual perspectives for architecture and behavior",
+        "Traces data flows with evidence",
+        "Documents uncertainties",
+        "Includes diagnosis and proposed target boundaries"
+      ]
+    },
+    {
+      "name": "frontend_backend_rewrite_plan",
+      "input": "Help me plan a full rewrite. Analyze the tangled codebase rigorously and deliver both current behavior docs and new project specs",
+      "assertions": [
+        "Produces reverse specs grounded in code",
+        "Includes debt diagnosis",
+        "Delivers target architecture, data models, and acceptance criteria"
+      ]
+    }
+  ]
+}

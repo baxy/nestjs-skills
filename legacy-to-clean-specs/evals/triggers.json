@@ -1,0 +1,10 @@
+{
+  "skill": "legacy-to-clean-specs",
+  "test_cases": [
+    {"input": "Analyze this spaghetti codebase, reverse-engineer the specs, and design a clean new project architecture", "should_trigger": true},
+    {"input": "Reverse-engineer this legacy system with evidence and write specs for a modular rewrite", "should_trigger": true},
+    {"input": "This code is a mess with no docs — extract current behavior and produce target design specs", "should_trigger": true},
+    {"input": "Just clean up this one function", "should_trigger": false},
+    {"input": "Write a new feature from scratch", "should_trigger": false}
+  ]
+}
