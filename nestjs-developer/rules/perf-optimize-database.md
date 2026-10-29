@@ -9,132 +9,72 @@ tags: performance, database, queries, optimization
 
 Select only needed columns, use proper indexes, avoid over-fetching relations, and consider query performance when designing your data access. Most API slowness traces back to inefficient database queries.
 
-**Incorrect (over-fetching data and missing indexes):**
+### Shared rules
 
-```typescript
-// Select everything when you need few fields
-@Injectable()
-export class UserService {
-  async findAllEmails(): Promise<string[]> {
-    const users = await this.userRepository.find();
-    // Fetches ALL columns for ALL users
-    return users.map((u) => u.email);
-  }
+- Always paginate list endpoints. Return `{ result, count, limit, offset }` (see `api-dto-naming`).
+- Index columns used in `WHERE`, `ORDER BY`, and joins.
+- Prefer selecting only the fields you need.
+- Avoid N+1 (see `db-typeorm-avoid-n-plus-one` or `db-prisma-queries`).
 
-  async getUserSummary(id: string): Promise<UserSummary> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: { posts: { comments: { author: true } }, followers: true },
-    });
-    // Over-fetches massive relation tree
-    return { name: user.name, postCount: user.posts.length };
-  }
-}
-
-// No indexes on frequently queried columns
-@Entity()
-export class Order {
-  @Column()
-  userId: string; // No index - full table scan on every lookup
-
-  @Column()
-  status: string; // No index - slow status filtering
-}
-```
-
-**Correct (select only needed data with proper indexes):**
+### TypeORM
 
 ```typescript
 // Select only needed columns
-@Injectable()
-export class UserService {
-  async findAllEmails(): Promise<string[]> {
-    const users = await this.userRepository.find({
-      select: { email: true }, // Only fetch the email column
-    });
-    return users.map((u) => u.email);
-  }
+const users = await this.userRepository.find({
+  select: { email: true },
+});
 
-  // Use QueryBuilder for complex selections
-  async getUserSummary(id: string): Promise<UserSummary> {
-    return this.userRepository
-      .createQueryBuilder('user')
-      .select('user.name', 'name')
-      .addSelect('COUNT(post.id)', 'postCount')
-      .leftJoin('user.posts', 'post')
-      .where('user.id = :id', { id })
-      .groupBy('user.id')
-      .getRawOne();
-  }
+// Pagination
+const [result, count] = await this.orderRepository.findAndCount({
+  where: { userId: authUser.id },
+  skip: query.offset,
+  take: query.limit,
+  order: { createdAt: 'DESC' },
+});
 
-  // Fetch relations only when needed
-  async getFullProfile(id: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: { id },
-      relations: { posts: true }, // Only immediate relation
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        posts: {
-          id: true,
-          title: true,
-        },
-      },
-    });
-  }
-}
-
-// Index the columns queries filter and sort on (see db-entity-conventions for the entity rules)
-@Entity('orders')
-@Index('IDX_orders_user_id_status', ['userId', 'status']) // Also serves queries on userId alone
-@Index('IDX_orders_created_at', ['createdAt'])
-export class Order {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ type: 'uuid' })
-  userId: string;
-
-  @Column({ type: 'varchar' })
-  status: OrderStatus;
-
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-}
-
-// Always paginate list endpoints: offset-based, limit 20 / offset 0 by default
-// (query DTOs extend PaginationQueryDto, see api-dto-naming)
-export interface PaginatedResult<T> {
-  result: T[];
-  count: number; // total matching rows, not the page length
-  limit: number;
-  offset: number;
-}
-
-@Injectable()
-export class OrderService {
-  constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-  ) {}
-
-  async findAll(authUser: JwtUser, query: FindAllOrdersQueryDto): Promise<PaginatedResult<Order>> {
-    const [result, count] = await this.orderRepository.findAndCount({
-      where: { userId: authUser.id }, // Only the caller's own orders
-      skip: query.offset,
-      take: query.limit,
-      order: { createdAt: 'DESC' }, // Stable order, newest first
-    });
-
-    return { result, count, limit: query.limit, offset: query.offset };
-  }
-}
-
-// The response envelope interceptor (api-use-interceptors) turns this into
-// { success: true, statusCode: 200, data: result, meta: { totalCount: count, limit, offset } }
+return { result, count, limit: query.limit, offset: query.offset };
 ```
 
-**Connection pool.** TypeORM pools connections per DataSource (the `pg` driver defaults to 10). Size it with `poolSize` (or `extra: { max }`) so that pool size times the number of instances, plus migration and admin connections, stays under the database's `max_connections`. Behind a pooler such as PgBouncer, size against the pooler's limit instead.
+Index on the entity (see `db-typeorm-entity-conventions`):
 
-Reference: [TypeORM Query Builder](https://typeorm.io/select-query-builder)
+```typescript
+@Entity('orders')
+@Index('IDX_orders_user_id_status', ['userId', 'status'])
+export class Order { /* ... */ }
+```
+
+### Prisma
+
+```typescript
+// Select only needed columns
+const users = await this.prisma.user.findMany({
+  select: { email: true },
+});
+
+// Pagination
+const [result, count] = await Promise.all([
+  this.prisma.order.findMany({
+    where: { userId: authUser.id, deletedAt: null },
+    skip: query.offset,
+    take: query.limit,
+    orderBy: { createdAt: 'desc' },
+  }),
+  this.prisma.order.count({
+    where: { userId: authUser.id, deletedAt: null },
+  }),
+]);
+
+return { result, count, limit: query.limit, offset: query.offset };
+```
+
+Index in the schema (see `db-prisma-schema`):
+
+```prisma
+@@index([userId, status], map: "IDX_orders_user_id_status")
+```
+
+### Connection pool
+
+Size the pool so that pool size × number of instances stays under the database `max_connections` (or the pooler's limit). TypeORM uses `poolSize` / `extra.max`. Prisma uses the connection string or driver adapter settings.
+
+Reference: [TypeORM Query Builder](https://typeorm.io/select-query-builder) · [Prisma query optimization](https://www.prisma.io/docs/orm/prisma-client/queries)
