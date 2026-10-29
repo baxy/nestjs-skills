@@ -1,8 +1,8 @@
 ---
 name: nestjs-developer
-description: NestJS coding conventions and best practices covering modules and folder layout, naming, dependency injection, REST controllers, DTOs and validation, TypeORM entities and migrations on PostgreSQL, Swagger/OpenAPI, error handling, security, testing tiers, logging and code style. Use when writing, generating or refactoring NestJS code (modules, controllers, services, DTOs, guards, interceptors, entities, migrations, tests, main.ts), or when working in a project that depends on @nestjs packages. For reviewing existing code or pull requests, use nestjs-reviewer.
+description: NestJS coding conventions and best practices covering modules and folder layout, naming, dependency injection, REST controllers, DTOs and validation, TypeORM or Prisma on PostgreSQL, Swagger/OpenAPI, error handling, security, testing tiers, logging and code style. Use when writing, generating or refactoring NestJS code (modules, controllers, services, DTOs, guards, interceptors, entities, migrations, tests, main.ts), or when working in a project that depends on @nestjs packages. For reviewing existing code or pull requests, use nestjs-reviewer.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # NestJS Developer
@@ -11,7 +11,9 @@ Conventions for building NestJS applications. Each rule lives in `rules/<rule-id
 
 ## Assumed stack
 
-The rules are written for NestJS 12 on Express or Fastify, TypeORM on PostgreSQL, `class-validator`/`class-transformer`, `@nestjs/swagger`, Vitest or Jest with `supertest`, and `nestjs-pino`. When the project uses a different library for one of these (Prisma, Mongoose, Zod...), keep the project's library and apply the intent of the rule.
+The rules are written for NestJS 12 on Express or Fastify, TypeORM or Prisma on PostgreSQL, `class-validator`/`class-transformer`, `@nestjs/swagger`, Vitest or Jest with `supertest`, and `nestjs-pino`. When the project uses a different library for one of these, keep the project's library and apply the intent of the rule.
+
+**Database detection:** Check `package.json` for `@prisma/client` or `prisma`. If present, use the `db-prisma-*` rules. Otherwise use the `db-typeorm-*` rules. Never mix the two sets in the same project.
 
 The examples are CommonJS-style imports without file extensions and use Jest's mock API (`jest.fn()`); `vi.fn()` and the rest of Vitest's API map one-to-one. `references/` holds what depends on the project's setup:
 
@@ -21,9 +23,10 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 ## How to use
 
 1. Check the project's `package.json` first: `"type": "module"` means ESM, and the test runner is whichever of `vitest` or `jest` it lists. Keep both as they are; for an ESM project, read `references/project-setup.md` before writing code. When no `package.json` is available, follow what the existing files show (`.js` import extensions, `vi.` or `jest.`); with no files at all it is a new project (ESM with Vitest). State the assumption in your answer.
-2. Find the task in the table below and **read every rule file listed for it before writing code**. The one-line summaries in the index are reminders, not the rule.
-3. The `style-` rules apply to every file, comment, message and doc you write. Read `style-code-comments` before writing code: the comments in the rule examples are notes for you, not part of the pattern.
-4. Each example focuses on one rule and may leave out unrelated decorators (Swagger, guards) for brevity. Apply all relevant rules together.
+2. Detect the database library (Prisma vs TypeORM) as described above.
+3. Find the task in the table below and **read every rule file listed for it before writing code**. The one-line summaries in the index are reminders, not the rule.
+4. The `style-` rules apply to every file, comment, message and doc you write. Read `style-code-comments` before writing code: the comments in the rule examples are notes for you, not part of the pattern.
+5. Each example focuses on one rule and may leave out unrelated decorators (Swagger, guards) for brevity. Apply all relevant rules together.
 
 | Task | Rules to read |
 |---|---|
@@ -33,10 +36,10 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 | Swappable implementation (interface, token, test double) | `di-use-interfaces-tokens`, `di-interface-segregation`, `di-liskov-substitution`, `di-avoid-service-locator` |
 | New or changed endpoint | `api-controller-conventions`, `api-dto-naming`, `api-use-pipes`, `security-validate-all-input`, `api-document-with-openapi`, `api-use-dto-serialization`, `security-use-guards` (`@Public()`/`@Roles()`), `api-custom-param-decorators`, `error-throw-http-exceptions` |
 | Update or derived DTO | `api-use-mapped-types`, `api-dto-naming` |
-| List endpoint or search | `perf-optimize-database` (pagination), `api-dto-naming` (`PaginationQueryDto`, search body), `db-avoid-n-plus-one` |
+| List endpoint or search | `perf-optimize-database` (pagination), `api-dto-naming` (`PaginationQueryDto`, search body), `db-typeorm-avoid-n-plus-one` or `db-prisma-queries` |
 | File upload | `api-file-uploads` |
-| Entity or schema change | `arch-resource-naming`, `db-entity-conventions`, `db-use-migrations`, `test-database-tier` |
-| Multi-step write | `db-use-transactions` |
+| Entity or schema change | `arch-resource-naming`, `db-typeorm-entity-conventions` or `db-prisma-schema`, `db-typeorm-migrations` or `db-prisma-migrations`, `test-database-tier` |
+| Multi-step write | `db-typeorm-transactions` or `db-prisma-transactions` |
 | Authentication or access control | `security-auth-jwt`, `security-hash-passwords`, `security-use-guards`, `api-custom-param-decorators`, `security-rate-limiting` |
 | Errors | `error-throw-http-exceptions`, `error-use-exception-filters`, `error-handle-async-errors` |
 | Response shape | `api-use-interceptors` (envelope), `api-use-dto-serialization` |
@@ -50,6 +53,7 @@ The examples are CommonJS-style imports without file extensions and use Jest's m
 | Health checks and deployment | `micro-use-health-checks`, `devops-graceful-shutdown` |
 | New setting or environment variable | `devops-use-config-module` |
 | Configurable infrastructure module | `arch-use-dynamic-modules`, `devops-use-config-module` |
+| Prisma setup | `db-prisma-setup`, `db-prisma-schema`, `db-prisma-migrations` |
 
 ## Rule index
 
@@ -111,10 +115,18 @@ Sections are ordered by impact; the prefix is the start of each rule ID.
 
 ### 7. Database & ORM (MEDIUM-HIGH) - `db-`
 
-- `db-entity-conventions` - Persistence-only entities, required `SnakeNamingStrategy`, singular class and plural table, named indexes and constraints
-- `db-use-migrations` - `synchronize` hardcoded to `false`; generate structural migrations from entities; verify no drift; run as a deploy step
-- `db-use-transactions` - Transactions for multi-step writes
-- `db-avoid-n-plus-one` - Avoid N+1 queries
+**TypeORM**
+- `db-typeorm-entity-conventions` - Persistence-only entities, required `SnakeNamingStrategy`, singular class and plural table, named indexes and constraints
+- `db-typeorm-migrations` - `synchronize` hardcoded to `false`; generate structural migrations from entities; verify no drift; run as a deploy step
+- `db-typeorm-transactions` - Transactions for multi-step writes
+- `db-typeorm-avoid-n-plus-one` - Avoid N+1 queries
+
+**Prisma**
+- `db-prisma-setup` - PrismaService as injectable singleton with lifecycle hooks
+- `db-prisma-schema` - Singular models, `@@map` / `@map`, named indexes, soft deletes
+- `db-prisma-migrations` - Use `prisma migrate`; never `db push` in shared environments
+- `db-prisma-transactions` - `$transaction` for multi-step writes
+- `db-prisma-queries` - Avoid N+1; prefer `select`
 
 ### 8. API Design (MEDIUM) - `api-`
 
